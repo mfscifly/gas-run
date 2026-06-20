@@ -1,0 +1,503 @@
+export type Province = "BC" | "AB" | "SK" | "MB" | "ON" | "QC" | "NB";
+export type UsState =
+  | "WA"
+  | "MT"
+  | "ND"
+  | "MN"
+  | "MI"
+  | "NY"
+  | "VT"
+  | "NH"
+  | "ME";
+
+export type Camera = {
+  label: string;
+  imageUrl: string;
+  sourceUrl: string;
+};
+
+export type CameraSource = {
+  label: string;
+  url: string;
+};
+
+export type Crossing = {
+  slug: string;
+  name: string;
+  province: Province;
+  usState: UsState;
+  cbpPortNumber: string | null;     // US-bound wait times (CBP feed)
+  cbsaOffice: string | null;        // Canada-bound wait times (CBSA CSV "Customs Office")
+  canadianTown: string;
+  americanTown: string;
+  cameras: Camera[];
+  cameraSources: CameraSource[];
+  notes?: string;
+};
+
+export type ProvincePriceDefault = { cadPerL: number; updatedAt: string };
+export type UsStatePriceDefault = { usdPerGal: number; updatedAt: string };
+
+export const PROVINCE_LABELS: Record<Province, string> = {
+  BC: "British Columbia",
+  AB: "Alberta",
+  SK: "Saskatchewan",
+  MB: "Manitoba",
+  ON: "Ontario",
+  QC: "Quebec",
+  NB: "New Brunswick",
+};
+
+export const PROVINCE_ORDER: Province[] = [
+  "BC",
+  "AB",
+  "SK",
+  "MB",
+  "ON",
+  "QC",
+  "NB",
+];
+
+const PRICE_UPDATED = "2026-05-01";
+
+export const PROVINCE_PRICES: Record<Province, ProvincePriceDefault> = {
+  BC: { cadPerL: 1.789, updatedAt: PRICE_UPDATED },
+  AB: { cadPerL: 1.319, updatedAt: PRICE_UPDATED },
+  SK: { cadPerL: 1.499, updatedAt: PRICE_UPDATED },
+  MB: { cadPerL: 1.499, updatedAt: PRICE_UPDATED },
+  ON: { cadPerL: 1.589, updatedAt: PRICE_UPDATED },
+  QC: { cadPerL: 1.699, updatedAt: PRICE_UPDATED },
+  NB: { cadPerL: 1.579, updatedAt: PRICE_UPDATED },
+};
+
+export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
+  WA: { usdPerGal: 4.499, updatedAt: PRICE_UPDATED },
+  MT: { usdPerGal: 3.799, updatedAt: PRICE_UPDATED },
+  ND: { usdPerGal: 3.399, updatedAt: PRICE_UPDATED },
+  MN: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
+  MI: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
+  NY: { usdPerGal: 3.699, updatedAt: PRICE_UPDATED },
+  VT: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
+  NH: { usdPerGal: 3.299, updatedAt: PRICE_UPDATED },
+  ME: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
+};
+
+const DRIVEBC = "https://www.drivebc.ca/cameras/";
+const WSDOT_CAMS = "https://wsdot.com/travel/real-time/cameras";
+const ON_511 = "https://511on.ca/cameras";
+const NY_511 = "https://511ny.org/";
+const MDOT_CAMS = "https://mdotjboss.state.mi.us/MiDrive/cameras";
+const QC_511 = "https://www.quebec511.info/en/Carte/Default.aspx";
+const NB_511 = "https://511.gnb.ca/en/cctv";
+const AB_511 = "https://511.alberta.ca/list/cameras";
+const SK_HOTLINE = "https://hotline.gov.sk.ca/map/";
+const MB_511 = "https://www.manitoba511.ca/en/cctv";
+
+const drivebcCam = (id: number, label: string): Camera => ({
+  label,
+  imageUrl: `https://images.drivebc.ca/bchighwaycam/pub/cameras/${id}.jpg`,
+  sourceUrl: `https://www.drivebc.ca/cameras/${id}`,
+});
+
+const wsdotCam = (file: string, label: string): Camera => ({
+  label,
+  imageUrl: `https://images.wsdot.wa.gov/nw/${file}.jpg`,
+  sourceUrl: WSDOT_CAMS,
+});
+
+const nyCam = (id: string, label: string): Camera => ({
+  label,
+  imageUrl: `https://nyssnapshot.com/${id}.png`,
+  sourceUrl: NY_511,
+});
+
+export const CROSSINGS: Crossing[] = [
+  {
+    slug: "pacific-highway",
+    name: "Pacific Highway",
+    province: "BC",
+    usState: "WA",
+    cbpPortNumber: "300401",
+    cbsaOffice: "Pacific Highway",
+    canadianTown: "Surrey, BC",
+    americanTown: "Blaine, WA",
+    cameras: [
+      drivebcCam(15, "BC side, Hwy 15 at Pacific Border Crossing"),
+      wsdotCam("543vc00026", "WA side, SR 543 at the border"),
+    ],
+    cameraSources: [
+      { label: "More on DriveBC", url: DRIVEBC },
+      { label: "More on WSDOT", url: WSDOT_CAMS },
+    ],
+    notes: "Truck route; passenger lanes available.",
+  },
+  {
+    slug: "peace-arch",
+    name: "Peace Arch",
+    province: "BC",
+    usState: "WA",
+    cbpPortNumber: "300402",
+    cbsaOffice: "Douglas",
+    canadianTown: "Surrey / White Rock, BC",
+    americanTown: "Blaine, WA",
+    cameras: [
+      drivebcCam(13, "BC side, Hwy 99 at Peace Arch"),
+      wsdotCam("005vc27650", "WA side, I-5 at MP 276.5"),
+    ],
+    cameraSources: [
+      { label: "More on DriveBC", url: DRIVEBC },
+      { label: "More on WSDOT", url: WSDOT_CAMS },
+    ],
+    notes: "Passenger only. No commercial vehicles.",
+  },
+  {
+    slug: "point-roberts",
+    name: "Point Roberts",
+    province: "BC",
+    usState: "WA",
+    cbpPortNumber: "300403",
+    cbsaOffice: "Boundary Bay",
+    canadianTown: "Tsawwassen, BC",
+    americanTown: "Point Roberts, WA",
+    cameras: [],
+    cameraSources: [
+      { label: "DriveBC cameras", url: DRIVEBC },
+      { label: "WSDOT cameras", url: WSDOT_CAMS },
+    ],
+    notes:
+      "Pene-xclave; only useful if you live in Tsawwassen. No dedicated border cam.",
+  },
+  {
+    slug: "sumas-huntingdon",
+    name: "Sumas-Huntingdon",
+    province: "BC",
+    usState: "WA",
+    cbpPortNumber: "300901",
+    cbsaOffice: "Abbotsford-Huntingdon",
+    canadianTown: "Abbotsford, BC",
+    americanTown: "Sumas, WA",
+    cameras: [
+      drivebcCam(170, "BC side, Sumas-Huntingdon south"),
+      wsdotCam("009vc09781", "WA side, SR 9 at the border"),
+    ],
+    cameraSources: [
+      { label: "More on DriveBC", url: DRIVEBC },
+      { label: "More on WSDOT", url: WSDOT_CAMS },
+    ],
+  },
+  {
+    slug: "lynden-aldergrove",
+    name: "Lynden-Aldergrove",
+    province: "BC",
+    usState: "WA",
+    cbpPortNumber: "302301",
+    cbsaOffice: "Aldergrove",
+    canadianTown: "Aldergrove, BC",
+    americanTown: "Lynden, WA",
+    cameras: [
+      drivebcCam(169, "BC side, Aldergrove / Lynden south"),
+      wsdotCam("539vc01510", "WA side, SR 539 near the border"),
+    ],
+    cameraSources: [
+      { label: "More on DriveBC", url: DRIVEBC },
+      { label: "More on WSDOT", url: WSDOT_CAMS },
+    ],
+  },
+
+  {
+    slug: "coutts-sweetgrass",
+    name: "Coutts-Sweetgrass",
+    province: "AB",
+    usState: "MT",
+    cbpPortNumber: "331001",
+    cbsaOffice: "Coutts",
+    canadianTown: "Coutts, AB",
+    americanTown: "Sweetgrass, MT",
+    cameras: [],
+    cameraSources: [
+      { label: "511 Alberta cameras", url: AB_511 },
+      { label: "MDT cameras", url: "https://www.mdt.mt.gov/travinfo/cameras/" },
+    ],
+    notes: "Main southern Alberta crossing, ~100 km south of Lethbridge.",
+  },
+
+  {
+    slug: "north-portal",
+    name: "North Portal-Portal",
+    province: "SK",
+    usState: "ND",
+    cbpPortNumber: null,
+    cbsaOffice: "North Portal",
+    canadianTown: "North Portal, SK",
+    americanTown: "Portal, ND",
+    cameras: [],
+    cameraSources: [
+      { label: "Saskatchewan Highway Hotline", url: SK_HOTLINE },
+      { label: "ND DOT cameras", url: "https://travel.dot.nd.gov/cctv" },
+    ],
+    notes: "CBP wait time not currently in feed; verify before relying on it.",
+  },
+
+  {
+    slug: "emerson-pembina",
+    name: "Emerson-Pembina",
+    province: "MB",
+    usState: "ND",
+    cbpPortNumber: "340101",
+    cbsaOffice: "Emerson",
+    canadianTown: "Emerson, MB",
+    americanTown: "Pembina, ND",
+    cameras: [],
+    cameraSources: [
+      { label: "Manitoba 511 cameras", url: MB_511 },
+      { label: "ND DOT cameras", url: "https://travel.dot.nd.gov/cctv" },
+    ],
+    notes: "Manitoba's main southern crossing; 24/7.",
+  },
+
+  {
+    slug: "fort-frances-international-falls",
+    name: "Fort Frances-International Falls",
+    province: "ON",
+    usState: "MN",
+    cbpPortNumber: "360401",
+    cbsaOffice: "Fort Frances Bridge",
+    canadianTown: "Fort Frances, ON",
+    americanTown: "International Falls, MN",
+    cameras: [],
+    cameraSources: [
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "MnDOT 511", url: "https://511mn.org/" },
+    ],
+  },
+  {
+    slug: "sault-ste-marie",
+    name: "Sault Ste. Marie International Bridge",
+    province: "ON",
+    usState: "MI",
+    cbpPortNumber: "380301",
+    cbsaOffice: "Sault Ste. Marie",
+    canadianTown: "Sault Ste. Marie, ON",
+    americanTown: "Sault Ste. Marie, MI",
+    cameras: [],
+    cameraSources: [
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "MDOT cameras", url: MDOT_CAMS },
+    ],
+  },
+  {
+    slug: "bluewater-bridge",
+    name: "Blue Water Bridge",
+    province: "ON",
+    usState: "MI",
+    cbpPortNumber: "380201",
+    cbsaOffice: "Blue Water Bridge",
+    canadianTown: "Sarnia, ON",
+    americanTown: "Port Huron, MI",
+    cameras: [
+      {
+        label: "ON side, traffic exiting Canada",
+        imageUrl: "https://wtbwb.ca/approach.jpg",
+        sourceUrl: "https://bluewaterbridge.ca/traffic/",
+      },
+    ],
+    cameraSources: [
+      { label: "Blue Water Bridge cameras", url: "https://bluewaterbridge.ca/traffic/" },
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "MDOT cameras", url: MDOT_CAMS },
+    ],
+  },
+  {
+    slug: "ambassador-bridge",
+    name: "Ambassador Bridge",
+    province: "ON",
+    usState: "MI",
+    cbpPortNumber: "380001",
+    cbsaOffice: "Ambassador Bridge",
+    canadianTown: "Windsor, ON",
+    americanTown: "Detroit, MI",
+    cameras: [],
+    cameraSources: [
+      { label: "Ambassador Bridge live cams", url: "https://www.ambassadorbridge.com/bridge-condition/" },
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "MDOT cameras", url: MDOT_CAMS },
+    ],
+    notes: "North America's busiest commercial crossing; bridge is privately owned, no public still images.",
+  },
+  {
+    slug: "windsor-detroit-tunnel",
+    name: "Detroit-Windsor Tunnel",
+    province: "ON",
+    usState: "MI",
+    cbpPortNumber: "380002",
+    cbsaOffice: "Windsor and Detroit Tunnel",
+    canadianTown: "Windsor, ON",
+    americanTown: "Detroit, MI",
+    cameras: [],
+    cameraSources: [
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "MDOT cameras", url: MDOT_CAMS },
+    ],
+    notes: "Passenger only.",
+  },
+  {
+    slug: "peace-bridge",
+    name: "Peace Bridge",
+    province: "ON",
+    usState: "NY",
+    cbpPortNumber: "090101",
+    cbsaOffice: "Peace Bridge",
+    canadianTown: "Fort Erie, ON",
+    americanTown: "Buffalo, NY",
+    cameras: [
+      nyCam("TA_146", "NY side, I-190 approach to the bridge"),
+    ],
+    cameraSources: [
+      { label: "Peace Bridge official cameras", url: "https://www.peacebridge.com/media-room/traffic-cameras/" },
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "NY 511 cameras", url: NY_511 },
+    ],
+  },
+  {
+    slug: "rainbow-bridge",
+    name: "Rainbow Bridge",
+    province: "ON",
+    usState: "NY",
+    cbpPortNumber: "090102",
+    cbsaOffice: "Rainbow Bridge",
+    canadianTown: "Niagara Falls, ON",
+    americanTown: "Niagara Falls, NY",
+    cameras: [
+      nyCam("R5_102", "NY side, looking toward Canada"),
+      nyCam("R5_103", "NY side, looking toward US"),
+    ],
+    cameraSources: [
+      { label: "Niagara bridge traffic", url: "https://niagaratraffic.ca/bridge/" },
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "NY 511 cameras", url: NY_511 },
+    ],
+    notes: "Passenger only.",
+  },
+  {
+    slug: "lewiston-queenston",
+    name: "Lewiston-Queenston Bridge",
+    province: "ON",
+    usState: "NY",
+    cbpPortNumber: "090104",
+    cbsaOffice: "Queenston-Lewiston Bridge",
+    canadianTown: "Queenston, ON",
+    americanTown: "Lewiston, NY",
+    cameras: [nyCam("R5_101", "NY side, US-bound approach")],
+    cameraSources: [
+      { label: "Niagara bridge traffic", url: "https://niagaratraffic.ca/bridge/" },
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "NY 511 cameras", url: NY_511 },
+    ],
+  },
+  {
+    slug: "thousand-islands",
+    name: "Thousand Islands Bridge",
+    province: "ON",
+    usState: "NY",
+    cbpPortNumber: "070801",
+    cbsaOffice: "Thousand Islands Bridge",
+    canadianTown: "Lansdowne, ON",
+    americanTown: "Alexandria Bay, NY",
+    cameras: [],
+    cameraSources: [
+      { label: "511 Ontario cameras", url: ON_511 },
+      { label: "NY 511 cameras", url: NY_511 },
+    ],
+  },
+
+  {
+    slug: "lacolle-champlain",
+    name: "Saint-Bernard-de-Lacolle / Champlain",
+    province: "QC",
+    usState: "NY",
+    cbpPortNumber: "071201",
+    cbsaOffice: "St-Bernard-de-Lacolle",
+    canadianTown: "Lacolle, QC",
+    americanTown: "Champlain, NY",
+    cameras: [],
+    cameraSources: [
+      { label: "Quebec 511 cameras", url: QC_511 },
+      { label: "NY 511 cameras", url: NY_511 },
+    ],
+    notes: "Quebec's main southern crossing, ~50 km south of Montreal.",
+  },
+  {
+    slug: "stanstead-derby-line",
+    name: "Stanstead / Derby Line (I-91)",
+    province: "QC",
+    usState: "VT",
+    cbpPortNumber: "020901",
+    cbsaOffice: "Stanstead",
+    canadianTown: "Stanstead, QC",
+    americanTown: "Derby Line, VT",
+    cameras: [],
+    cameraSources: [
+      { label: "Quebec 511 cameras", url: QC_511 },
+      { label: "VT 511 cameras", url: "https://511vt.com/" },
+    ],
+  },
+  {
+    slug: "philipsburg-highgate-springs",
+    name: "Philipsburg / Highgate Springs",
+    province: "QC",
+    usState: "VT",
+    cbpPortNumber: "021201",
+    cbsaOffice: "St-Armand/Philipsburg",
+    canadianTown: "Saint-Armand, QC",
+    americanTown: "Highgate Springs, VT",
+    cameras: [],
+    cameraSources: [
+      { label: "Quebec 511 cameras", url: QC_511 },
+      { label: "VT 511 cameras", url: "https://511vt.com/" },
+    ],
+  },
+
+  {
+    slug: "st-stephen-calais",
+    name: "St. Stephen / Calais (Ferry Point)",
+    province: "NB",
+    usState: "ME",
+    cbpPortNumber: "011501",
+    cbsaOffice: "St. Stephen",
+    canadianTown: "St. Stephen, NB",
+    americanTown: "Calais, ME",
+    cameras: [],
+    cameraSources: [
+      { label: "NB 511 cameras", url: NB_511 },
+      { label: "Maine 511 cameras", url: "https://www.maine511.org/" },
+    ],
+  },
+  {
+    slug: "woodstock-houlton",
+    name: "Woodstock / Houlton",
+    province: "NB",
+    usState: "ME",
+    cbpPortNumber: "010601",
+    cbsaOffice: "Woodstock Road",
+    canadianTown: "Woodstock, NB",
+    americanTown: "Houlton, ME",
+    cameras: [],
+    cameraSources: [
+      { label: "NB 511 cameras", url: NB_511 },
+      { label: "Maine 511 cameras", url: "https://www.maine511.org/" },
+    ],
+  },
+];
+
+const CROSSING_BY_SLUG = new Map(CROSSINGS.map((c) => [c.slug, c]));
+
+export function getCrossing(slug: string): Crossing | undefined {
+  return CROSSING_BY_SLUG.get(slug);
+}
+
+export function crossingsByProvince(): Map<Province, Crossing[]> {
+  const map = new Map<Province, Crossing[]>();
+  for (const p of PROVINCE_ORDER) map.set(p, []);
+  for (const c of CROSSINGS) map.get(c.province)!.push(c);
+  return map;
+}
