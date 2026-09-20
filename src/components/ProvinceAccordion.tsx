@@ -61,14 +61,21 @@ function ProvinceRow({
             {crossings.length} crossing{crossings.length === 1 ? "" : "s"}
             {min !== null && (
               <>
-                <span className="mx-1.5 opacity-50">·</span>shortest going {min}m
+                <span className="mx-1.5 opacity-50">·</span>shortest to US {min}m
               </>
             )}
           </span>
         </div>
         <Chevron />
       </summary>
-      <ul className="border-t border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
+      <div
+        aria-hidden
+        className="flex items-center justify-end gap-1.5 border-t border-black/10 px-4 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wide opacity-60 dark:border-white/15"
+      >
+        <span className="w-16 text-center">To US</span>
+        <span className="w-16 text-center">To CA</span>
+      </div>
+      <ul className="divide-y divide-black/5 dark:divide-white/10">
         {crossings.map((c) => {
           const waits = getCrossingWaits(c, data);
           return (
@@ -86,8 +93,12 @@ function ProvinceRow({
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <WaitTimeBadge wait={waits.usBound} prefix="→" />
-                  <WaitTimeBadge wait={waits.caBound} prefix="←" />
+                  <span className="w-16 flex justify-center">
+                    <WaitTimeBadge wait={waits.usBound} srLabel="US-bound wait" />
+                  </span>
+                  <span className="w-16 flex justify-center">
+                    <WaitTimeBadge wait={waits.caBound} srLabel="Canada-bound wait" />
+                  </span>
                 </div>
               </Link>
             </li>

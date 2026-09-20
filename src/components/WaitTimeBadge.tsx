@@ -3,6 +3,7 @@ import type { WaitTime, LaneStatus } from "@/lib/wait-times";
 type Props = {
   wait: WaitTime | null | undefined;
   prefix?: string;
+  srLabel?: string;
   className?: string;
 };
 
@@ -30,7 +31,7 @@ const TONE_CLASSES = {
   muted: "bg-black/5 dark:bg-white/10 opacity-70 ring-black/10 dark:ring-white/15",
 } as const;
 
-export function WaitTimeBadge({ wait, prefix, className }: Props) {
+export function WaitTimeBadge({ wait, prefix, srLabel, className }: Props) {
   const { label, tone } = tier(wait?.delayMin ?? null, wait?.status);
   return (
     <span
@@ -41,7 +42,8 @@ export function WaitTimeBadge({ wait, prefix, className }: Props) {
       ].join(" ")}
     >
       {prefix && <span aria-hidden className="opacity-70">{prefix}</span>}
-      {label}
+      {srLabel && <span className="sr-only">{srLabel} </span>}
+      <span aria-hidden={Boolean(srLabel)}>{label}</span>
     </span>
   );
 }
