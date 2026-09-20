@@ -58,28 +58,43 @@ export const PROVINCE_ORDER: Province[] = [
   "NB",
 ];
 
-const PRICE_UPDATED = "2026-05-01";
+// Canadian defaults: Statistics Canada table 18-10-0001, "Monthly average
+// retail prices for gasoline and fuel oil, by geography", regular unleaded at
+// self service. Monthly, so this is the most recent month published. Each
+// province uses the surveyed city nearest its crossings.
+// Refresh: POST https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods
+//   with {"productId":18100001,"coordinate":"<geo>.2.0.0.0.0.0.0.0.0","latestN":1}
+//   geo: BC/Vancouver 16, AB/Calgary 15, SK/Regina 12, MB/Winnipeg 11,
+//        ON/Toronto 9, QC/Montreal 7, NB/Saint John 5. Value is cents/L.
+const CA_PRICE_UPDATED = "2026-08-01";
+
+// US defaults: EIA "Weekly Retail Gasoline and Diesel Prices", regular, all
+// formulations, from pswrgvwall.xls sheet "Data 3". EIA only breaks out a
+// handful of states weekly, so states it does not cover fall back to their
+// PADD region, noted per entry.
+// Refresh: https://www.eia.gov/petroleum/gasdiesel/xls/pswrgvwall.xls
+const US_PRICE_UPDATED = "2026-09-14";
 
 export const PROVINCE_PRICES: Record<Province, ProvincePriceDefault> = {
-  BC: { cadPerL: 1.789, updatedAt: PRICE_UPDATED },
-  AB: { cadPerL: 1.319, updatedAt: PRICE_UPDATED },
-  SK: { cadPerL: 1.499, updatedAt: PRICE_UPDATED },
-  MB: { cadPerL: 1.499, updatedAt: PRICE_UPDATED },
-  ON: { cadPerL: 1.589, updatedAt: PRICE_UPDATED },
-  QC: { cadPerL: 1.699, updatedAt: PRICE_UPDATED },
-  NB: { cadPerL: 1.579, updatedAt: PRICE_UPDATED },
+  BC: { cadPerL: 2.067, updatedAt: CA_PRICE_UPDATED }, // Vancouver
+  AB: { cadPerL: 1.623, updatedAt: CA_PRICE_UPDATED }, // Calgary
+  SK: { cadPerL: 1.675, updatedAt: CA_PRICE_UPDATED }, // Regina
+  MB: { cadPerL: 1.669, updatedAt: CA_PRICE_UPDATED }, // Winnipeg
+  ON: { cadPerL: 1.703, updatedAt: CA_PRICE_UPDATED }, // Toronto
+  QC: { cadPerL: 1.849, updatedAt: CA_PRICE_UPDATED }, // Montreal
+  NB: { cadPerL: 1.794, updatedAt: CA_PRICE_UPDATED }, // Saint John
 };
 
 export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
-  WA: { usdPerGal: 4.499, updatedAt: PRICE_UPDATED },
-  MT: { usdPerGal: 3.799, updatedAt: PRICE_UPDATED },
-  ND: { usdPerGal: 3.399, updatedAt: PRICE_UPDATED },
-  MN: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
-  MI: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
-  NY: { usdPerGal: 3.699, updatedAt: PRICE_UPDATED },
-  VT: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
-  NH: { usdPerGal: 3.299, updatedAt: PRICE_UPDATED },
-  ME: { usdPerGal: 3.499, updatedAt: PRICE_UPDATED },
+  WA: { usdPerGal: 5.503, updatedAt: US_PRICE_UPDATED }, // state series
+  MT: { usdPerGal: 4.438, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
+  ND: { usdPerGal: 4.091, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  MN: { usdPerGal: 4.223, updatedAt: US_PRICE_UPDATED }, // state series
+  MI: { usdPerGal: 4.091, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  NY: { usdPerGal: 4.339, updatedAt: US_PRICE_UPDATED }, // state series
+  VT: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  NH: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  ME: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
 };
 
 const DRIVEBC = "https://www.drivebc.ca/cameras/";
