@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { calculateSavings } from "@/lib/calc";
+import { calculateSavings, type SavingsResult } from "@/lib/calc";
 import { useFxRate } from "@/lib/use-fx";
 
 const TANK_STORAGE_KEY = "gas-tools.tankSizeL";
@@ -53,19 +53,20 @@ export function SavingsCard({
     if (n !== null) localStorage.setItem(TANK_STORAGE_KEY, String(n));
   }, [tankSize]);
 
+  const tankSizeNum = parse(tankSize) ?? DEFAULT_TANK_L;
+  const usdNum = parse(tankUsd);
+  const cadNum = parse(tankCad);
+
   const result = useMemo(() => {
     if (fx.status !== "ready") return null;
-    const tank = parse(tankSize) ?? DEFAULT_TANK_L;
-    const usd = parse(tankUsd);
-    const cad = parse(tankCad);
-    if (!usd || !cad) return null;
+    if (!usdNum || !cadNum) return null;
     return calculateSavings({
-      tankSizeL: tank,
-      usdPerGal: usd,
-      cadPerL: cad,
+      tankSizeL: tankSizeNum,
+      usdPerGal: usdNum,
+      cadPerL: cadNum,
       fxUsdToCad: fx.usdToCad,
     });
-  }, [fx, tankSize, tankUsd, tankCad]);
+  }, [fx, tankSizeNum, usdNum, cadNum]);
 
   let hero: React.ReactNode;
   if (fx.status === "loading") {
@@ -81,7 +82,7 @@ export function SavingsCard({
       <Hero
         tone="good"
         big={`$${result.savingsCad.toFixed(2)}`}
-        subtitle={`saved per ${parse(tankSize) ?? DEFAULT_TANK_L} L tank`}
+        subtitle={`saved per ${tankSizeNum} L tank`}
         kicker="Worth the trip"
       />
     );
@@ -90,7 +91,7 @@ export function SavingsCard({
       <Hero
         tone="bad"
         big={`$${Math.abs(result.savingsCad).toFixed(2)}`}
-        subtitle={`more expensive per ${parse(tankSize) ?? DEFAULT_TANK_L} L tank`}
+        subtitle={`more expensive per ${tankSizeNum} L tank`}
         kicker="Skip the trip"
       />
     );
@@ -99,6 +100,23 @@ export function SavingsCard({
   return (
     <div className="flex flex-col gap-5">
       {hero}
+
+      {result && fx.status === "ready" && cadNum && usdNum && (
+        <Breakdown
+          result={result}
+          cadPerL={cadNum}
+          usdPerGal={usdNum}
+          fxRate={fx.usdToCad}
+          tankSizeL={tankSizeNum}
+        />
+      )}
+
+      {prefillMeta && (
+        <p className="text-xs opacity-60">
+          Pre-filled with {prefillMeta.label} (updated {prefillMeta.updatedAt}).
+          Edit to use your own.
+        </p>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1.5 text-sm">
@@ -138,18 +156,6 @@ export function SavingsCard({
           />
         </label>
       </div>
-
-      {prefillMeta && (
-        <p className="text-xs opacity-60">
-          Pre-filled with {prefillMeta.label} (updated {prefillMeta.updatedAt}).
-          Edit to use your own.
-        </p>
-      )}
-      {fx.status === "ready" && (
-        <p className="text-xs opacity-50 tabular-nums">
-          Calculated at 1 USD = {fx.usdToCad.toFixed(4)} CAD.
-        </p>
-      )}
     </div>
   );
 }
@@ -178,6 +184,54 @@ function Hero({
         {big}
       </span>
       <span className="text-sm opacity-80">{subtitle}</span>
+    </div>
+  );
+}
+
+function Breakdown({
+  result,
+  cadPerL,
+  usdPerGal,
+  fxRate,
+  tankSizeL,
+}: {
+  result: SavingsResult;
+  cadPerL: number;
+  usdPerGal: number;
+  fxRate: number;
+  tankSizeL: number;
+}) {
+  const gapAbs = Math.abs(result.perLitreSavingsCad);
+  const totalAbs = Math.abs(result.savingsCad);
+  const gapLabel = result.worthIt ? "Gap" : "Extra";
+  const gapSuffix = result.worthIt ? "" : " more";
+  const gapTone = result.worthIt
+    ? "text-emerald-700 dark:text-emerald-300"
+    : "text-rose-700 dark:text-rose-300";
+
+  return (
+    <div className="rounded-md border border-black/10 dark:border-white/15 px-4 py-3 text-sm tabular-nums flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between">
+        <span className="opacity-70">Canada</span>
+        <span>{cadPerL.toFixed(3)} /L</span>
+      </div>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="opacity-70">US</span>
+        <span className="text-right">
+          {result.cadEquivalentOfUsPrice.toFixed(3)} /L{" "}
+          <span className="opacity-60 text-xs">
+            (${usdPerGal.toFixed(2)}/gal @ {fxRate.toFixed(4)})
+          </span>
+        </span>
+      </div>
+      <div className="border-t border-black/10 dark:border-white/15 my-0.5" />
+      <div className={`flex items-baseline justify-between font-medium ${gapTone}`}>
+        <span>{gapLabel}</span>
+        <span>
+          {gapAbs.toFixed(3)} /L &times; {tankSizeL} L = ${totalAbs.toFixed(2)}
+          {gapSuffix}
+        </span>
+      </div>
     </div>
   );
 }
