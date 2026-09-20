@@ -125,6 +125,10 @@ function parseCbsaDelay(raw: string): { delayMin: number | null; status: LaneSta
   const v = raw.trim();
   if (v === "" || v === "--") return { delayMin: null, status: "update-pending" };
   if (/^not applicable$/i.test(v)) return { delayMin: null, status: "closed" };
+  // The feed reports an out-of-hours or suspended port as "Temporarily closed".
+  // Without this it fell through to update-pending and the UI claimed the wait
+  // was unavailable, when in fact the feed told us exactly what was going on.
+  if (/closed/i.test(v)) return { delayMin: null, status: "closed" };
   if (/^no delay$/i.test(v)) return { delayMin: 0, status: "open" };
   const m = v.match(/^(\d+)\s*minute/i);
   if (m) return { delayMin: Number(m[1]), status: "open" };

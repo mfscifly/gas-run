@@ -18,6 +18,14 @@ import {
 
 export const revalidate = 300;
 
+// Camera hosts serve the current still at a fixed URL, so a browser will reuse
+// the frame it cached on the last visit. Bucket a cache-buster to the revalidate
+// window: fresh on every regeneration, stable within one.
+function withCacheBust(url: string): string {
+  const bucket = Math.floor(Date.now() / (revalidate * 1000));
+  return `${url}${url.includes("?") ? "&" : "?"}t=${bucket}`;
+}
+
 export function generateStaticParams() {
   return CROSSINGS.map((c) => ({ slug: c.slug }));
 }
@@ -99,7 +107,7 @@ export default async function CrossingPage({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={cam.imageUrl}
+                    src={withCacheBust(cam.imageUrl)}
                     alt={cam.label}
                     className="aspect-video w-full bg-black/5 dark:bg-white/5 object-cover"
                     loading="lazy"
@@ -182,7 +190,6 @@ function UsBoundCard({
       kicker="Going (US-bound)"
       arrow="→"
       wait={wait}
-      tracked={tracked}
       sourceLabel="CBP"
       lanes={
         wait
@@ -213,7 +220,6 @@ function CaBoundCard({
       kicker="Returning (Canada-bound)"
       arrow="←"
       wait={wait}
-      tracked={tracked}
       sourceLabel="CBSA"
       lanes={[]}
       missingMessage={
@@ -229,7 +235,6 @@ function DirectionCard({
   kicker,
   arrow,
   wait,
-  tracked,
   sourceLabel,
   lanes,
   missingMessage,
@@ -237,7 +242,6 @@ function DirectionCard({
   kicker: string;
   arrow: string;
   wait: WaitTime | null;
-  tracked: boolean;
   sourceLabel: string;
   lanes: { label: string; value: number | null }[];
   missingMessage: string;
@@ -280,7 +284,7 @@ function DirectionCard({
         </>
       ) : (
         <span className="text-sm opacity-70 mt-0.5">
-          {tracked ? missingMessage : missingMessage}
+          {wait?.status === "closed" ? "Closed right now." : missingMessage}
         </span>
       )}
     </div>

@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Netlify auto-detects Next.js and installs this runtime, but pinning it here
+# keeps the build reproducible rather than dependent on detection.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The FX route and the ISR'd crossing pages need EXCHANGE_RATE_API_KEY, which is
+# set in the Netlify UI (Site configuration > Environment variables), never here.

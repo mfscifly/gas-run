@@ -93,10 +93,14 @@ const AB_511 = "https://511.alberta.ca/list/cameras";
 const SK_HOTLINE = "https://hotline.gov.sk.ca/map/";
 const MB_511 = "https://www.manitoba511.ca/en/cctv";
 
+// DriveBC retired images.drivebc.ca/bchighwaycam/pub/cameras/<id>.jpg. It still
+// answers 200, but every id returns the same "no longer available" placeholder,
+// so a dead feed renders as a valid image. Current stills come from
+// /images/<id>.jpg on the main host (see /api/webcams/ -> links.imageDisplay).
 const drivebcCam = (id: number, label: string): Camera => ({
   label,
-  imageUrl: `https://images.drivebc.ca/bchighwaycam/pub/cameras/${id}.jpg`,
-  sourceUrl: `https://www.drivebc.ca/cameras/${id}`,
+  imageUrl: `https://www.drivebc.ca/images/${id}.jpg`,
+  sourceUrl: `${DRIVEBC}${id}`,
 });
 
 const wsdotCam = (file: string, label: string): Camera => ({
