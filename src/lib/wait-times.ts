@@ -51,6 +51,20 @@ type CbpFeed = {
   };
 };
 
+// CBP's own feed bakes an "At " prefix into update_time (e.g. "At 9:00 am PDT").
+// Strip it here so WaitTime.updateTime is a bare timestamp and the view can own
+// the word "updated" for both feeds consistently. Matched case-insensitively,
+// anchored to the start, and tolerant of extra whitespace, since this is an
+// external feed that can change shape without notice; if the prefix isn't
+// there, the value is left untouched.
+function stripCbpUpdatePrefix(raw: string | null | undefined): string | null {
+  if (raw === null || raw === undefined) return null;
+  const match = raw.match(/^\s*at\s+(.*)$/i);
+  if (!match) return raw;
+  const rest = match[1].trim();
+  return rest === "" ? null : rest;
+}
+
 function parseDelay(block: CbpLaneBlock | undefined): number | null {
   if (!block) return null;
   const raw = block.delay_minutes;
@@ -77,7 +91,7 @@ function toCbpWait(port: CbpPort): { portNumber: string; wait: CbpWait } | null 
       nexusDelayMin: parseDelay(port.passenger_vehicle_lanes?.NEXUS_SENTRI_lanes),
       readyLanesDelayMin: parseDelay(port.passenger_vehicle_lanes?.ready_lanes),
       status: deriveCbpStatus(port, std),
-      updateTime: port.passenger_vehicle_lanes?.standard_lanes?.update_time ?? null,
+      updateTime: stripCbpUpdatePrefix(port.passenger_vehicle_lanes?.standard_lanes?.update_time ?? null),
     },
   };
 }
