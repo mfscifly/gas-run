@@ -42,7 +42,7 @@ export function WaitTimeBadge({ wait, prefix, srLabel, className }: Props) {
       ].join(" ")}
     >
       {prefix && <span aria-hidden className="opacity-70">{prefix}</span>}
-      {srLabel && <span className="sr-only">{srLabel} </span>}
+      {srLabel && <span className="sr-only">{srLabel}: {label}</span>}
       <span aria-hidden={Boolean(srLabel)}>{label}</span>
     </span>
   );

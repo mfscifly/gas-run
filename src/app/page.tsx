@@ -23,8 +23,7 @@ export default async function Home() {
         <header className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold">Pick a crossing</h2>
           <p className="text-xs opacity-60 tabular-nums">
-            <span aria-hidden>→</span> US-bound (CBP) ·{" "}
-            <span aria-hidden>←</span> Canada-bound (CBSA) · updates every 5 min
+            To US (CBP) · To CA (CBSA) · updates every 5 min
           </p>
         </header>
         <ProvinceAccordion data={waits} />
