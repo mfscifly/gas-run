@@ -27,14 +27,18 @@ function withCacheBust(url: string): string {
   return `${url}${url.includes("?") ? "&" : "?"}t=${bucket}`;
 }
 
+// The subset of Tone that actually reaches a rendered number. "muted" means
+// there's no number to colour (closed, or no data), so it never needs an
+// entry here; see the tone !== "muted" check in DirectionCard below.
+type RenderableTone = Exclude<Tone, "muted">;
+
 // Text-only counterpart to WaitTimeBadge's TONE_CLASSES (which are pill
 // styles: background + ring). The big minutes number below needs just the
 // colour, tiered by the same shared `tier()` helper.
-const TEXT_TONE_CLASSES: Record<Tone, string> = {
+const TEXT_TONE_CLASSES: Record<RenderableTone, string> = {
   good: "text-emerald-700 dark:text-emerald-300",
   warn: "text-amber-700 dark:text-amber-300",
   bad: "text-rose-700 dark:text-rose-300",
-  muted: "opacity-70",
 };
 
 export function generateStaticParams() {
@@ -259,7 +263,6 @@ function DirectionCard({
   lanes: { label: string; value: number | null }[];
   missingMessage: string;
 }) {
-  const hasNumber = wait?.delayMin !== null && wait?.delayMin !== undefined;
   const renderedLanes = lanes.filter(
     (l): l is { label: string; value: number } => typeof l.value === "number",
   );
@@ -271,7 +274,7 @@ function DirectionCard({
         <span aria-hidden className="mr-1">{arrow}</span>
         {kicker}
       </span>
-      {hasNumber && wait ? (
+      {wait && tone !== "muted" ? (
         <>
           <span
             className={[
