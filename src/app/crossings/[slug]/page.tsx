@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import {
   CROSSINGS,
   PROVINCE_LABELS,
-  PROVINCE_PRICES,
+  CA_MARKET_LABELS,
+  CA_MARKET_PRICES,
   US_STATE_PRICES,
   getCrossing,
 } from "@/data/crossings";
@@ -56,9 +57,9 @@ export default async function CrossingPage({
   const waitsData = await getAllWaits();
   const { usBound, caBound } = getCrossingWaits(crossing, waitsData);
 
-  const provincePrice = PROVINCE_PRICES[crossing.province];
+  const caPrice = CA_MARKET_PRICES[crossing.caMarket];
   const usStatePrice = US_STATE_PRICES[crossing.usState];
-  const prefillUpdated = [provincePrice.updatedAt, usStatePrice.updatedAt]
+  const prefillUpdated = [caPrice.updatedAt, usStatePrice.updatedAt]
     .sort()
     .at(0)!;
 
@@ -156,9 +157,9 @@ export default async function CrossingPage({
         </h2>
         <SavingsCard
           prefillUsdPerGal={usStatePrice.usdPerGal}
-          prefillCadPerL={provincePrice.cadPerL}
+          prefillCadPerL={caPrice.cadPerL}
           prefillMeta={{
-            label: `${PROVINCE_LABELS[crossing.province]} + ${crossing.usState} averages`,
+            label: `${CA_MARKET_LABELS[crossing.caMarket]} + ${crossing.usState} averages`,
             updatedAt: prefillUpdated,
           }}
         />

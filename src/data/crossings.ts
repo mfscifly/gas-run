@@ -1,4 +1,19 @@
 export type Province = "BC" | "AB" | "SK" | "MB" | "ON" | "QC" | "NB";
+
+// StatCan surveys cities, not provinces, so prices are keyed to the surveyed
+// market nearest each crossing rather than to its province. Ontario is the only
+// province where this actually differs: Ottawa-Gatineau runs about 5 cents/L
+// under Toronto, which is worth roughly $3 on a 60 L tank at Thousand Islands.
+export type CaMarket =
+  | "Vancouver"
+  | "Calgary"
+  | "Regina"
+  | "Winnipeg"
+  | "Toronto"
+  | "ThunderBay"
+  | "Ottawa"
+  | "Montreal"
+  | "SaintJohn";
 export type UsState =
   | "WA"
   | "MT"
@@ -25,6 +40,7 @@ export type Crossing = {
   slug: string;
   name: string;
   province: Province;
+  caMarket: CaMarket;      // StatCan market used for the Canadian price
   usState: UsState;
   cbpPortNumber: string | null;     // US-bound wait times (CBP feed)
   cbsaOffice: string | null;        // Canada-bound wait times (CBSA CSV "Customs Office")
@@ -35,7 +51,7 @@ export type Crossing = {
   notes?: string;
 };
 
-export type ProvincePriceDefault = { cadPerL: number; updatedAt: string };
+export type CaMarketPriceDefault = { cadPerL: number; updatedAt: string };
 export type UsStatePriceDefault = { usdPerGal: number; updatedAt: string };
 
 export const PROVINCE_LABELS: Record<Province, string> = {
@@ -46,6 +62,18 @@ export const PROVINCE_LABELS: Record<Province, string> = {
   ON: "Ontario",
   QC: "Quebec",
   NB: "New Brunswick",
+};
+
+export const CA_MARKET_LABELS: Record<CaMarket, string> = {
+  Vancouver: "Vancouver",
+  Calgary: "Calgary",
+  Regina: "Regina",
+  Winnipeg: "Winnipeg",
+  Toronto: "Toronto",
+  ThunderBay: "Thunder Bay",
+  Ottawa: "Ottawa-Gatineau",
+  Montreal: "Montreal",
+  SaintJohn: "Saint John",
 };
 
 export const PROVINCE_ORDER: Province[] = [
@@ -62,8 +90,8 @@ export const PROVINCE_ORDER: Province[] = [
 // Canadian defaults: Statistics Canada table 18-10-0001, "Monthly average
 // retail prices for gasoline and fuel oil, by geography", regular unleaded at
 // self service. Monthly, so this is the most recent month published. Each
-// province uses the surveyed city nearest its crossings.
-// Geography members: BC/Vancouver 16, AB/Calgary 15, SK/Regina 12, MB/Winnipeg 11, ON/Toronto 9, QC/Montreal 7, NB/Saint John 5.
+// crossing is keyed to the surveyed market nearest it, via Crossing.caMarket.
+// Geography members: Vancouver 16, Calgary 15, Regina 12, Winnipeg 11, Toronto 9, Thunder Bay 10, Ottawa-Gatineau 8, Montreal 7, Saint John 5.
 const CA_PRICE_UPDATED = "2026-08-01";
 
 // US defaults: EIA "Weekly Retail Gasoline and Diesel Prices", regular, all
@@ -72,14 +100,16 @@ const CA_PRICE_UPDATED = "2026-08-01";
 // PADD region, noted per entry.
 const US_PRICE_UPDATED = "2026-09-14";
 
-export const PROVINCE_PRICES: Record<Province, ProvincePriceDefault> = {
-  BC: { cadPerL: 2.067, updatedAt: CA_PRICE_UPDATED }, // Vancouver
-  AB: { cadPerL: 1.623, updatedAt: CA_PRICE_UPDATED }, // Calgary
-  SK: { cadPerL: 1.675, updatedAt: CA_PRICE_UPDATED }, // Regina
-  MB: { cadPerL: 1.669, updatedAt: CA_PRICE_UPDATED }, // Winnipeg
-  ON: { cadPerL: 1.703, updatedAt: CA_PRICE_UPDATED }, // Toronto
-  QC: { cadPerL: 1.849, updatedAt: CA_PRICE_UPDATED }, // Montreal
-  NB: { cadPerL: 1.794, updatedAt: CA_PRICE_UPDATED }, // Saint John
+export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
+  Vancouver: { cadPerL: 2.067, updatedAt: CA_PRICE_UPDATED },
+  Calgary: { cadPerL: 1.623, updatedAt: CA_PRICE_UPDATED },
+  Regina: { cadPerL: 1.675, updatedAt: CA_PRICE_UPDATED },
+  Winnipeg: { cadPerL: 1.669, updatedAt: CA_PRICE_UPDATED },
+  Toronto: { cadPerL: 1.703, updatedAt: CA_PRICE_UPDATED },
+  ThunderBay: { cadPerL: 1.720, updatedAt: CA_PRICE_UPDATED },
+  Ottawa: { cadPerL: 1.650, updatedAt: CA_PRICE_UPDATED },
+  Montreal: { cadPerL: 1.849, updatedAt: CA_PRICE_UPDATED },
+  SaintJohn: { cadPerL: 1.794, updatedAt: CA_PRICE_UPDATED },
 };
 
 export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
@@ -133,6 +163,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "pacific-highway",
     name: "Pacific Highway",
     province: "BC",
+    caMarket: "Vancouver",
     usState: "WA",
     cbpPortNumber: "300401",
     cbsaOffice: "Pacific Highway",
@@ -152,6 +183,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "peace-arch",
     name: "Peace Arch",
     province: "BC",
+    caMarket: "Vancouver",
     usState: "WA",
     cbpPortNumber: "300402",
     cbsaOffice: "Douglas",
@@ -171,6 +203,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "point-roberts",
     name: "Point Roberts",
     province: "BC",
+    caMarket: "Vancouver",
     usState: "WA",
     cbpPortNumber: "300403",
     cbsaOffice: "Boundary Bay",
@@ -188,6 +221,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "sumas-huntingdon",
     name: "Sumas-Huntingdon",
     province: "BC",
+    caMarket: "Vancouver",
     usState: "WA",
     cbpPortNumber: "300901",
     cbsaOffice: "Abbotsford-Huntingdon",
@@ -206,6 +240,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "lynden-aldergrove",
     name: "Lynden-Aldergrove",
     province: "BC",
+    caMarket: "Vancouver",
     usState: "WA",
     cbpPortNumber: "302301",
     cbsaOffice: "Aldergrove",
@@ -225,6 +260,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "coutts-sweetgrass",
     name: "Coutts-Sweetgrass",
     province: "AB",
+    caMarket: "Calgary",
     usState: "MT",
     cbpPortNumber: "331001",
     cbsaOffice: "Coutts",
@@ -242,6 +278,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "north-portal",
     name: "North Portal-Portal",
     province: "SK",
+    caMarket: "Regina",
     usState: "ND",
     cbpPortNumber: null,
     cbsaOffice: "North Portal",
@@ -259,6 +296,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "emerson-pembina",
     name: "Emerson-Pembina",
     province: "MB",
+    caMarket: "Winnipeg",
     usState: "ND",
     cbpPortNumber: "340101",
     cbsaOffice: "Emerson",
@@ -276,6 +314,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "fort-frances-international-falls",
     name: "Fort Frances-International Falls",
     province: "ON",
+    caMarket: "ThunderBay",
     usState: "MN",
     cbpPortNumber: "360401",
     cbsaOffice: "Fort Frances Bridge",
@@ -291,6 +330,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "sault-ste-marie",
     name: "Sault Ste. Marie International Bridge",
     province: "ON",
+    caMarket: "ThunderBay",
     usState: "MI",
     cbpPortNumber: "380301",
     cbsaOffice: "Sault Ste. Marie",
@@ -306,6 +346,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "bluewater-bridge",
     name: "Blue Water Bridge",
     province: "ON",
+    caMarket: "Toronto",
     usState: "MI",
     cbpPortNumber: "380201",
     cbsaOffice: "Blue Water Bridge",
@@ -328,6 +369,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "ambassador-bridge",
     name: "Ambassador Bridge",
     province: "ON",
+    caMarket: "Toronto",
     usState: "MI",
     cbpPortNumber: "380001",
     cbsaOffice: "Ambassador Bridge",
@@ -345,6 +387,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "windsor-detroit-tunnel",
     name: "Detroit-Windsor Tunnel",
     province: "ON",
+    caMarket: "Toronto",
     usState: "MI",
     cbpPortNumber: "380002",
     cbsaOffice: "Windsor and Detroit Tunnel",
@@ -361,6 +404,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "peace-bridge",
     name: "Peace Bridge",
     province: "ON",
+    caMarket: "Toronto",
     usState: "NY",
     cbpPortNumber: "090101",
     cbsaOffice: "Peace Bridge",
@@ -379,6 +423,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "rainbow-bridge",
     name: "Rainbow Bridge",
     province: "ON",
+    caMarket: "Toronto",
     usState: "NY",
     cbpPortNumber: "090102",
     cbsaOffice: "Rainbow Bridge",
@@ -399,6 +444,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "lewiston-queenston",
     name: "Lewiston-Queenston Bridge",
     province: "ON",
+    caMarket: "Toronto",
     usState: "NY",
     cbpPortNumber: "090104",
     cbsaOffice: "Queenston-Lewiston Bridge",
@@ -415,6 +461,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "thousand-islands",
     name: "Thousand Islands Bridge",
     province: "ON",
+    caMarket: "Ottawa",
     usState: "NY",
     cbpPortNumber: "070801",
     cbsaOffice: "Thousand Islands Bridge",
@@ -431,6 +478,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "lacolle-champlain",
     name: "Saint-Bernard-de-Lacolle / Champlain",
     province: "QC",
+    caMarket: "Montreal",
     usState: "NY",
     cbpPortNumber: "071201",
     cbsaOffice: "St-Bernard-de-Lacolle",
@@ -447,6 +495,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "stanstead-derby-line",
     name: "Stanstead / Derby Line (I-91)",
     province: "QC",
+    caMarket: "Montreal",
     usState: "VT",
     cbpPortNumber: "020901",
     cbsaOffice: "Stanstead",
@@ -462,6 +511,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "philipsburg-highgate-springs",
     name: "Philipsburg / Highgate Springs",
     province: "QC",
+    caMarket: "Montreal",
     usState: "VT",
     cbpPortNumber: "021201",
     cbsaOffice: "St-Armand/Philipsburg",
@@ -478,6 +528,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "st-stephen-calais",
     name: "St. Stephen / Calais (Ferry Point)",
     province: "NB",
+    caMarket: "SaintJohn",
     usState: "ME",
     cbpPortNumber: "011501",
     cbsaOffice: "St. Stephen",
@@ -493,6 +544,7 @@ export const CROSSINGS: Crossing[] = [
     slug: "woodstock-houlton",
     name: "Woodstock / Houlton",
     province: "NB",
+    caMarket: "SaintJohn",
     usState: "ME",
     cbpPortNumber: "010601",
     cbsaOffice: "Woodstock Road",

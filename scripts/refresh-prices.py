@@ -36,18 +36,19 @@ STATCAN_URL = (
 )
 EIA_URL = "https://www.eia.gov/petroleum/gasdiesel/xls/pswrgvwall.xls"
 
-# StatCan geography member ids from table 18-10-0001. StatCan surveys cities,
-# not provinces, so each province is represented by the surveyed city nearest
-# its crossings. Ontario is the weakest fit: one Toronto price covers crossings
-# from Windsor to Fort Frances.
+# StatCan geography member ids from table 18-10-0001, keyed by the CaMarket
+# union in src/data/crossings.ts. Each crossing points at one of these, so a
+# province with several surveyed markets (Ontario) is no longer flattened to one.
 CA_MARKETS = {
-    "BC": (16, "Vancouver"),
-    "AB": (15, "Calgary"),
-    "SK": (12, "Regina"),
-    "MB": (11, "Winnipeg"),
-    "ON": (9, "Toronto"),
-    "QC": (7, "Montreal"),
-    "NB": (5, "Saint John"),
+    "Vancouver": (16, "Vancouver"),
+    "Calgary": (15, "Calgary"),
+    "Regina": (12, "Regina"),
+    "Winnipeg": (11, "Winnipeg"),
+    "Toronto": (9, "Toronto"),
+    "ThunderBay": (10, "Thunder Bay"),
+    "Ottawa": (8, "Ottawa-Gatineau"),
+    "Montreal": (7, "Montreal"),
+    "SaintJohn": (5, "Saint John"),
 }
 # Dimension 2 member 2 = regular unleaded at self service filling stations.
 CA_FUEL_MEMBER = 2
@@ -69,24 +70,27 @@ US_MARKETS = {
 
 # Declaration order in the generated tables, matching the Province / UsState
 # unions so the file reads consistently.
-CA_ORDER = ["BC", "AB", "SK", "MB", "ON", "QC", "NB"]
+CA_ORDER = [
+    "Vancouver", "Calgary", "Regina", "Winnipeg", "Toronto",
+    "ThunderBay", "Ottawa", "Montreal", "SaintJohn",
+]
 US_ORDER = ["WA", "MT", "ND", "MN", "MI", "NY", "VT", "NH", "ME"]
 
-# A province jumping more than this between runs means the source changed shape
+# A market jumping more than this between runs means the source changed shape
 # or we grabbed the wrong series. Better to fail loudly than to publish it.
 SANITY_MIN_CAD_PER_L, SANITY_MAX_CAD_PER_L = 0.80, 4.00
 SANITY_MIN_USD_PER_GAL, SANITY_MAX_USD_PER_GAL = 1.50, 10.00
 
 
 def fetch_canada() -> tuple[dict[str, float], str]:
-    """Latest StatCan monthly price per province, in CAD/L."""
+    """Latest StatCan monthly price per market, in CAD/L."""
     payload = [
         {
             "productId": 18100001,
             "coordinate": f"{geo}.{CA_FUEL_MEMBER}.0.0.0.0.0.0.0.0",
             "latestN": 1,
         }
-        for geo, _city in CA_MARKETS.values()
+        for geo, _label in CA_MARKETS.values()
     ]
     req = urllib.request.Request(
         STATCAN_URL,
@@ -107,14 +111,14 @@ def fetch_canada() -> tuple[dict[str, float], str]:
 
     prices: dict[str, float] = {}
     periods = set()
-    for prov, (geo, city) in CA_MARKETS.items():
+    for market, (geo, label) in CA_MARKETS.items():
         if geo not in by_geo:
-            raise SystemExit(f"StatCan returned no data for {prov} ({city})")
+            raise SystemExit(f"StatCan returned no data for {market} ({label})")
         cents, ref_per = by_geo[geo]
         dollars = round(cents / 100, 3)
         if not SANITY_MIN_CAD_PER_L <= dollars <= SANITY_MAX_CAD_PER_L:
-            raise SystemExit(f"{prov} price {dollars} CAD/L is outside sane bounds")
-        prices[prov] = dollars
+            raise SystemExit(f"{market} price {dollars} CAD/L is outside sane bounds")
+        prices[market] = dollars
         periods.add(ref_per)
 
     if len(periods) != 1:
@@ -158,13 +162,13 @@ def fetch_us() -> tuple[dict[str, float], str]:
 
 def render(ca: dict[str, float], ca_date: str, us: dict[str, float], us_date: str) -> str:
     geo_hint = ", ".join(
-        f"{prov}/{city} {geo}" for prov, (geo, city) in CA_MARKETS.items()
+        f"{label} {geo}" for _market, (geo, label) in CA_MARKETS.items()
     )
     lines = [
         "// Canadian defaults: Statistics Canada table 18-10-0001, \"Monthly average",
         "// retail prices for gasoline and fuel oil, by geography\", regular unleaded at",
         "// self service. Monthly, so this is the most recent month published. Each",
-        "// province uses the surveyed city nearest its crossings.",
+        "// crossing is keyed to the surveyed market nearest it, via Crossing.caMarket.",
         f"// Geography members: {geo_hint}.",
         f'const CA_PRICE_UPDATED = "{ca_date}";',
         "",
@@ -174,12 +178,11 @@ def render(ca: dict[str, float], ca_date: str, us: dict[str, float], us_date: st
         "// PADD region, noted per entry.",
         f'const US_PRICE_UPDATED = "{us_date}";',
         "",
-        "export const PROVINCE_PRICES: Record<Province, ProvincePriceDefault> = {",
+        "export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {",
     ]
-    for prov in CA_ORDER:
-        city = CA_MARKETS[prov][1]
+    for market in CA_ORDER:
         lines.append(
-            f"  {prov}: {{ cadPerL: {ca[prov]:.3f}, updatedAt: CA_PRICE_UPDATED }}, // {city}"
+            f"  {market}: {{ cadPerL: {ca[market]:.3f}, updatedAt: CA_PRICE_UPDATED }},"
         )
     lines += ["};", "", "export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {"]
     for state in US_ORDER:
@@ -217,8 +220,8 @@ def main() -> int:
         return 0
 
     print(f"Prices are stale. Newest: CA {ca_date}, US {us_date}.")
-    for prov in CA_ORDER:
-        print(f"  {prov} {ca[prov]:.3f} CAD/L  ({CA_MARKETS[prov][1]})")
+    for market in CA_ORDER:
+        print(f"  {market} {ca[market]:.3f} CAD/L  ({CA_MARKETS[market][1]})")
     for state in US_ORDER:
         print(f"  {state} {us[state]:.3f} USD/gal  ({US_MARKETS[state][1]})")
 
