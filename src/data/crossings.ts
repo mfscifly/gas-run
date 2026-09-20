@@ -73,7 +73,7 @@ const CA_PRICE_UPDATED = "2026-08-01";
 const US_PRICE_UPDATED = "2026-09-14";
 
 export const PROVINCE_PRICES: Record<Province, ProvincePriceDefault> = {
-  BC: { cadPerL: 1.111, updatedAt: CA_PRICE_UPDATED }, // Vancouver
+  BC: { cadPerL: 2.067, updatedAt: CA_PRICE_UPDATED }, // Vancouver
   AB: { cadPerL: 1.623, updatedAt: CA_PRICE_UPDATED }, // Calgary
   SK: { cadPerL: 1.675, updatedAt: CA_PRICE_UPDATED }, // Regina
   MB: { cadPerL: 1.669, updatedAt: CA_PRICE_UPDATED }, // Winnipeg
