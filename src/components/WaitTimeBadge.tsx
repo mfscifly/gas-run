@@ -6,13 +6,20 @@ type Props = {
   className?: string;
 };
 
-function tier(min: number | null, status: LaneStatus | undefined) {
-  if (status === "closed") return { label: "Closed", tone: "muted" as const };
+export type Tone = "good" | "warn" | "bad" | "muted";
+
+// Shared with DirectionCard on the crossing detail page, which colours its
+// big minutes number by the same tier instead of duplicating the thresholds.
+export function tier(
+  min: number | null,
+  status: LaneStatus | undefined,
+): { label: string; tone: Tone } {
+  if (status === "closed") return { label: "Closed", tone: "muted" };
   if (min === null || status === "update-pending")
-    return { label: "n/a", tone: "muted" as const };
-  if (min <= 10) return { label: `${min}m`, tone: "good" as const };
-  if (min <= 30) return { label: `${min}m`, tone: "warn" as const };
-  return { label: `${min}m`, tone: "bad" as const };
+    return { label: "n/a", tone: "muted" };
+  if (min <= 10) return { label: `${min}m`, tone: "good" };
+  if (min <= 30) return { label: `${min}m`, tone: "warn" };
+  return { label: `${min}m`, tone: "bad" };
 }
 
 const TONE_CLASSES = {

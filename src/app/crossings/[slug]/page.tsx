@@ -9,7 +9,7 @@ import {
   getCrossing,
 } from "@/data/crossings";
 import { SavingsCard } from "@/components/SavingsCard";
-import { WaitTimeBadge } from "@/components/WaitTimeBadge";
+import { tier, type Tone } from "@/components/WaitTimeBadge";
 import {
   getAllWaits,
   getCrossingWaits,
@@ -26,6 +26,16 @@ function withCacheBust(url: string): string {
   const bucket = Math.floor(Date.now() / (revalidate * 1000));
   return `${url}${url.includes("?") ? "&" : "?"}t=${bucket}`;
 }
+
+// Text-only counterpart to WaitTimeBadge's TONE_CLASSES (which are pill
+// styles: background + ring). The big minutes number below needs just the
+// colour, tiered by the same shared `tier()` helper.
+const TEXT_TONE_CLASSES: Record<Tone, string> = {
+  good: "text-emerald-700 dark:text-emerald-300",
+  warn: "text-amber-700 dark:text-amber-300",
+  bad: "text-rose-700 dark:text-rose-300",
+  muted: "opacity-70",
+};
 
 export function generateStaticParams() {
   return CROSSINGS.map((c) => ({ slug: c.slug }));
@@ -128,25 +138,27 @@ export default async function CrossingPage({
               ))}
             </div>
           ) : (
-            <p className="text-sm opacity-70">
-              No direct camera feed for this crossing. Browse on either side:
-            </p>
-          )}
-          {crossing.cameraSources.length > 0 && (
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              {crossing.cameraSources.map((s) => (
-                <li key={s.url}>
-                  <a
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline opacity-80 hover:opacity-100"
-                  >
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <>
+              <p className="text-sm opacity-70">
+                No direct camera feed for this crossing. Browse on either side:
+              </p>
+              {crossing.cameraSources.length > 0 && (
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {crossing.cameraSources.map((s) => (
+                    <li key={s.url}>
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline opacity-80 hover:opacity-100"
+                      >
+                        {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </section>
       )}
@@ -251,19 +263,22 @@ function DirectionCard({
   const renderedLanes = lanes.filter(
     (l): l is { label: string; value: number } => typeof l.value === "number",
   );
+  const { tone } = tier(wait?.delayMin ?? null, wait?.status);
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/15 p-4 sm:p-5 flex flex-col gap-1">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs uppercase tracking-wide opacity-70">
-          <span aria-hidden className="mr-1">{arrow}</span>
-          {kicker}
-        </span>
-        <WaitTimeBadge wait={wait} />
-      </div>
+    <div className="rounded-xl border border-black/10 dark:border-white/15 p-3 sm:p-4 flex flex-col gap-0.5">
+      <span className="text-xs uppercase tracking-wide opacity-70">
+        <span aria-hidden className="mr-1">{arrow}</span>
+        {kicker}
+      </span>
       {hasNumber && wait ? (
         <>
-          <span className="text-4xl sm:text-5xl font-semibold tabular-nums leading-none mt-1">
+          <span
+            className={[
+              "text-4xl sm:text-5xl font-semibold tabular-nums leading-none mt-1",
+              TEXT_TONE_CLASSES[tone],
+            ].join(" ")}
+          >
             {wait.delayMin}
             <span className="ml-1 text-base font-normal opacity-70">min</span>
           </span>
