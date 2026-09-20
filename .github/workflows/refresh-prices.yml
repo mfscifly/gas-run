@@ -1,0 +1,67 @@
+name: Refresh pump prices
+
+# EIA republishes its weekly retail series on Monday afternoon ET, StatCan
+# monthly. Running Tuesday picks up both without racing either.
+on:
+  schedule:
+    - cron: "0 13 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # xlrd reads the legacy .xls EIA still publishes. Kept out of
+      # package.json since nothing in the app needs it.
+      - run: pip install xlrd==2.0.2
+
+      - name: Regenerate price defaults
+        run: python3 scripts/refresh-prices.py
+
+      - name: Open a PR if anything moved
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- src/data/crossings.ts; then
+            echo "Prices unchanged. Nothing to do."
+            exit 0
+          fi
+
+          BRANCH="prices/$(date -u +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add src/data/crossings.ts
+          git commit -m "Refresh pump price defaults"
+          git push -u origin "$BRANCH"
+
+          # The diff is the useful part of the review, so put it in the body.
+          {
+            echo "Automated refresh from StatCan 18-10-0001 (monthly) and the EIA"
+            echo "weekly retail series. Both sources are keyless."
+            echo
+            echo "Check the numbers look sane before merging. States EIA does not"
+            echo "break out weekly still fall back to their PADD region."
+            echo
+            echo '```diff'
+            git diff "origin/${GITHUB_REF_NAME}...$BRANCH" -- src/data/crossings.ts
+            echo '```'
+          } > /tmp/pr-body.md
+
+          gh pr create \
+            --title "Refresh pump price defaults" \
+            --body-file /tmp/pr-body.md \
+            --base "${GITHUB_REF_NAME}" \
+            --head "$BRANCH"
