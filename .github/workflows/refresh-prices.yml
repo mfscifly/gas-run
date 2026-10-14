@@ -55,14 +55,14 @@ jobs:
               -c "Superseded: this week's prices are within the normal range."
           fi
 
-          if git diff --quiet -- src/data/crossings.ts; then
+          if git diff --quiet -- src/data/prices.generated.ts; then
             echo "Prices unchanged. Nothing to do."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/crossings.ts
+          git add src/data/prices.generated.ts
           git commit -m "Refresh pump price defaults"
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
@@ -79,7 +79,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
-          git add src/data/crossings.ts
+          git add src/data/prices.generated.ts
           git commit -m "Refresh pump price defaults (large move)"
           git push --force origin "$BRANCH"
 
@@ -91,7 +91,7 @@ jobs:
             echo "source series in scripts/refresh-prices.py."
             echo
             echo '```diff'
-            git diff "origin/${GITHUB_REF_NAME}...$BRANCH" -- src/data/crossings.ts
+            git diff "origin/${GITHUB_REF_NAME}...$BRANCH" -- src/data/prices.generated.ts
             echo '```'
           } > /tmp/pr-body.md
 
