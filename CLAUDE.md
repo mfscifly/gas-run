@@ -25,7 +25,7 @@ Cross-border gas price + savings tool. Successor to gastools.netlify.app.
 - `src/lib/wait-times.ts` — CBP XML + CBSA CSV fetchers/parsers, 5-min revalidate
 - `src/data/crossings.ts` — 22 curated crossings (each naming its `caMarket`) + generated price defaults + helpers
 - `scripts/refresh-prices.py` — regenerates the price defaults from StatCan + EIA
-- `.github/workflows/refresh-prices.yml` — runs that script weekly, opens a PR on change
+- `.github/workflows/refresh-prices.yml` — runs that script weekly; commits routine changes straight to main, routes moves over 15% to a rolling `prices/review` PR
 - `legacy/` — original vanilla HTML/JS site (gitignored, kept locally for reference)
 
 ## Env

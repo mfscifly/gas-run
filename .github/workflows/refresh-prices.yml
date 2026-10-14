@@ -15,9 +15,9 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -25,43 +25,82 @@ jobs:
       # package.json since nothing in the app needs it.
       - run: pip install xlrd==2.0.2
 
+      # Exit 3 means the file was written but some market moved more than the
+      # script's MAX_RUN_CHANGE. Any other non-zero fails the run, which emails.
       - name: Regenerate price defaults
-        run: python3 scripts/refresh-prices.py
+        id: refresh
+        run: |
+          set +e
+          python3 scripts/refresh-prices.py
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "review=false" >> "$GITHUB_OUTPUT" ;;
+            3) echo "review=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$code" ;;
+          esac
 
-      - name: Open a PR if anything moved
+      # Routine moves ship straight to main so nobody has to remember to merge
+      # a weekly PR. Netlify deploys on the push.
+      - name: Commit to main if nothing moved suspiciously
+        if: steps.refresh.outputs.review == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+
+          # Prices settled back into range, so an open review PR is now stale.
+          if gh pr view prices/review --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr close prices/review --delete-branch \
+              -c "Superseded: this week's prices are within the normal range."
+          fi
 
           if git diff --quiet -- src/data/crossings.ts; then
             echo "Prices unchanged. Nothing to do."
             exit 0
           fi
 
-          BRANCH="prices/$(date -u +%Y-%m-%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
           git add src/data/crossings.ts
           git commit -m "Refresh pump price defaults"
-          git push -u origin "$BRANCH"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
-          # The diff is the useful part of the review, so put it in the body.
+      # Large moves go to one rolling branch and PR. A later run overwrites it
+      # rather than stacking another PR on top.
+      - name: Open or update the review PR
+        if: steps.refresh.outputs.review == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          BRANCH="prices/review"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add src/data/crossings.ts
+          git commit -m "Refresh pump price defaults (large move)"
+          git push --force origin "$BRANCH"
+
           {
             echo "Automated refresh from StatCan 18-10-0001 (monthly) and the EIA"
-            echo "weekly retail series. Both sources are keyless."
-            echo
-            echo "Check the numbers look sane before merging. States EIA does not"
-            echo "break out weekly still fall back to their PADD region."
+            echo "weekly retail series. At least one market moved more than the"
+            echo "script's MAX_RUN_CHANGE since the last run, so this needs a look"
+            echo "before it ships. If the move is real, merge. If not, check the"
+            echo "source series in scripts/refresh-prices.py."
             echo
             echo '```diff'
             git diff "origin/${GITHUB_REF_NAME}...$BRANCH" -- src/data/crossings.ts
             echo '```'
           } > /tmp/pr-body.md
 
-          gh pr create \
-            --title "Refresh pump price defaults" \
-            --body-file /tmp/pr-body.md \
-            --base "${GITHUB_REF_NAME}" \
-            --head "$BRANCH"
+          if gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$BRANCH" --body-file /tmp/pr-body.md
+          else
+            gh pr create \
+              --title "Review pump price refresh (large move)" \
+              --body-file /tmp/pr-body.md \
+              --base "${GITHUB_REF_NAME}" \
+              --head "$BRANCH"
+          fi
