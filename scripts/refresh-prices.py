@@ -10,7 +10,12 @@ GasBuddy (no public API):
           formulations. Only distributed as a legacy .xls workbook.
 
 Rewrites everything between the <generated:prices> markers. Run with --check to
-verify freshness without writing (used by CI to decide whether to open a PR).
+verify freshness without writing.
+
+Exit codes: 0 written or already current, 1 stale (--check) or a source broke
+or returned an insane value, 3 written but some market moved more than
+MAX_RUN_CHANGE since the last run. CI commits 0 straight to main and routes 3
+to a PR for a human to look at.
 
 Usage:
     python3 scripts/refresh-prices.py [--check]
@@ -76,10 +81,17 @@ CA_ORDER = [
 ]
 US_ORDER = ["WA", "MT", "ND", "MN", "MI", "NY", "VT", "NH", "ME"]
 
-# A market jumping more than this between runs means the source changed shape
-# or we grabbed the wrong series. Better to fail loudly than to publish it.
+# A price outside these bounds means the source changed shape or we grabbed the
+# wrong series. Better to fail loudly than to publish it.
 SANITY_MIN_CAD_PER_L, SANITY_MAX_CAD_PER_L = 0.80, 4.00
 SANITY_MIN_USD_PER_GAL, SANITY_MAX_USD_PER_GAL = 1.50, 10.00
+
+# Plausible but large moves between runs. Real prices rarely swing this much in
+# a week or a month, so anything past it gets a human look before it ships.
+MAX_RUN_CHANGE = 0.15
+EXIT_NEEDS_REVIEW = 3
+
+PRICE_LINE = re.compile(r"^\s+(\w+): \{ (?:cadPerL|usdPerGal): ([\d.]+),", re.M)
 
 
 def fetch_canada() -> tuple[dict[str, float], str]:
@@ -228,8 +240,21 @@ def main() -> int:
     if args.check:
         return 1
 
+    old = {key: float(val) for key, val in PRICE_LINE.findall(match.group(2))}
+    new = {**ca, **us}
+    jumps = [
+        f"  {key} {old[key]:.3f} -> {new[key]:.3f} ({(new[key] - old[key]) / old[key]:+.1%})"
+        for key in CA_ORDER + US_ORDER
+        if key in old and abs(new[key] - old[key]) / old[key] > MAX_RUN_CHANGE
+    ]
+
     TARGET.write_text(source[: match.start(2)] + block + source[match.end(2) :])
     print(f"\nWrote {TARGET}.")
+
+    if jumps:
+        print(f"\nMoved more than {MAX_RUN_CHANGE:.0%} since the last run:")
+        print("\n".join(jumps))
+        return EXIT_NEEDS_REVIEW
     return 0
 
 
