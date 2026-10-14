@@ -23,7 +23,8 @@ Cross-border gas price + savings tool. Successor to gastools.netlify.app.
 - `src/lib/calc.ts` — pure conversion + savings math
 - `src/lib/use-fx.ts` — client hook wrapping `/api/fx`
 - `src/lib/wait-times.ts` — CBP XML + CBSA CSV fetchers/parsers, 5-min revalidate
-- `src/data/crossings.ts` — 22 curated crossings (each naming its `caMarket`) + generated price defaults + helpers
+- `src/data/crossings.ts` — 22 curated crossings (each naming its `caMarket`) + helpers
+- `src/data/prices.generated.ts` — price defaults, written whole by `scripts/refresh-prices.py`
 - `scripts/refresh-prices.py` — regenerates the price defaults from StatCan + EIA
 - `.github/workflows/refresh-prices.yml` — runs that script weekly; commits routine changes straight to main, routes moves over 15% to a rolling `prices/review` PR
 - `legacy/` — original vanilla HTML/JS site (gitignored, kept locally for reference)
@@ -58,8 +59,8 @@ items pointing at direct image URLs. The curated set was chosen for population
 proximity / gas-tourism relevance; not every CBP-tracked port is included.
 
 ## Prices
-`CA_MARKET_PRICES` and `US_STATE_PRICES` live between `<generated:prices>` markers
-in `src/data/crossings.ts` and are **generated, not hand-edited**. Run
+`CA_MARKET_PRICES` and `US_STATE_PRICES` live in `src/data/prices.generated.ts`,
+which is **generated, not hand-edited**; the script overwrites the whole file. Run
 `scripts/refresh-prices.py` instead. Sources are free and keyless:
 - Canada: StatCan table 18-10-0001, monthly, regular unleaded self serve, by city.
   Keyed by `CaMarket` (the surveyed city), not by province. Each crossing names

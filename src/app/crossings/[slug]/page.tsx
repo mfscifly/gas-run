@@ -4,10 +4,9 @@ import {
   CROSSINGS,
   PROVINCE_LABELS,
   CA_MARKET_LABELS,
-  CA_MARKET_PRICES,
-  US_STATE_PRICES,
   getCrossing,
 } from "@/data/crossings";
+import { CA_MARKET_PRICES, US_STATE_PRICES } from "@/data/prices.generated";
 import { SavingsCard } from "@/components/SavingsCard";
 import { tier, type Tone } from "@/components/WaitTimeBadge";
 import {
