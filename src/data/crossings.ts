@@ -98,7 +98,7 @@ const CA_PRICE_UPDATED = "2026-08-01";
 // formulations, from pswrgvwall.xls sheet "Data 3". EIA only breaks out a
 // handful of states weekly, so states it does not cover fall back to their
 // PADD region, noted per entry.
-const US_PRICE_UPDATED = "2026-09-14";
+const US_PRICE_UPDATED = "2026-10-05";
 
 export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
   Vancouver: { cadPerL: 2.067, updatedAt: CA_PRICE_UPDATED },
@@ -113,15 +113,15 @@ export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
 };
 
 export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
-  WA: { usdPerGal: 5.503, updatedAt: US_PRICE_UPDATED }, // state series
-  MT: { usdPerGal: 4.438, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
-  ND: { usdPerGal: 4.091, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  MN: { usdPerGal: 4.223, updatedAt: US_PRICE_UPDATED }, // state series
-  MI: { usdPerGal: 4.091, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  NY: { usdPerGal: 4.339, updatedAt: US_PRICE_UPDATED }, // state series
-  VT: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  NH: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  ME: { usdPerGal: 4.294, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  WA: { usdPerGal: 5.424, updatedAt: US_PRICE_UPDATED }, // state series
+  MT: { usdPerGal: 4.417, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
+  ND: { usdPerGal: 4.109, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  MN: { usdPerGal: 4.200, updatedAt: US_PRICE_UPDATED }, // state series
+  MI: { usdPerGal: 4.109, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  NY: { usdPerGal: 4.380, updatedAt: US_PRICE_UPDATED }, // state series
+  VT: { usdPerGal: 4.343, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  NH: { usdPerGal: 4.343, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  ME: { usdPerGal: 4.343, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
 };
 // </generated:prices>
 
