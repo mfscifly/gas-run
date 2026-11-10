@@ -18,7 +18,7 @@ const CA_PRICE_UPDATED = "2026-09-01";
 // formulations, from pswrgvwall.xls sheet "Data 3". EIA only breaks out a
 // handful of states weekly, so states it does not cover fall back to their
 // PADD region, noted per entry.
-const US_PRICE_UPDATED = "2026-11-02";
+const US_PRICE_UPDATED = "2026-11-09";
 
 export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
   Vancouver: { cadPerL: 2.095, updatedAt: CA_PRICE_UPDATED },
@@ -33,13 +33,13 @@ export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
 };
 
 export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
-  WA: { usdPerGal: 5.095, updatedAt: US_PRICE_UPDATED }, // state series
-  MT: { usdPerGal: 4.213, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
-  ND: { usdPerGal: 4.102, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  MN: { usdPerGal: 4.017, updatedAt: US_PRICE_UPDATED }, // state series
-  MI: { usdPerGal: 4.102, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  NY: { usdPerGal: 4.217, updatedAt: US_PRICE_UPDATED }, // state series
-  VT: { usdPerGal: 4.145, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  NH: { usdPerGal: 4.145, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  ME: { usdPerGal: 4.145, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  WA: { usdPerGal: 4.874, updatedAt: US_PRICE_UPDATED }, // state series
+  MT: { usdPerGal: 3.946, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
+  ND: { usdPerGal: 3.868, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  MN: { usdPerGal: 3.849, updatedAt: US_PRICE_UPDATED }, // state series
+  MI: { usdPerGal: 3.868, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  NY: { usdPerGal: 4.116, updatedAt: US_PRICE_UPDATED }, // state series
+  VT: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  NH: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  ME: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
 };
