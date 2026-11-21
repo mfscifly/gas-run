@@ -19,8 +19,10 @@ Cross-border gas price + savings tool. Successor to gastools.netlify.app.
 - `src/components/Calculator.tsx` — **dead code.** The v2 combined converter + savings
   component, superseded by `PriceConverter` + `SavingsCard`. Imported nowhere; safe to delete.
 - `src/app/globals.css` — theme tokens (light/dark) + shared `panel`, `field`, `label-mono`, `link` utilities.
-  Restrained editorial look: hairlines, square corners, one accent (`--accent`) used sparingly;
-  green/amber/rose are reserved for wait-time and savings tones.
+  Editorial look: hairlines, square corners, mono labels, border-blue brand (`--accent`, `--hero`)
+  with sun-yellow highlights inside blue areas; green/amber/rose are reserved for wait-time and savings tones.
+- `src/components/BorderScene.tsx` — flat SVG border scene used in the blue hero bands and the share cards
+- `src/components/LiveCameras.tsx` — homepage "Live at the border" strip of camera stills (`src/lib/camera.ts` cache-busts them)
 - `src/app/icon.svg`, `src/app/apple-icon.tsx` — favicon + iOS icon (brand mark hardcoded; keep in sync with `Logo.tsx`)
 - `src/app/opengraph-image.tsx`, `twitter-image.tsx` (+ per-crossing copies under `crossings/[slug]/`) —
   link-preview cards, rendered by `src/lib/og.tsx` with the Geist woff files in `src/assets/fonts/`

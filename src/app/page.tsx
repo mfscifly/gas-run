@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ProvinceAccordion } from "@/components/ProvinceAccordion";
 import { PriceConverter } from "@/components/PriceConverter";
+import { BorderScene } from "@/components/BorderScene";
+import { LiveCameras } from "@/components/LiveCameras";
 import { getAllWaits } from "@/lib/wait-times";
 
 export const revalidate = 300;
@@ -9,19 +11,33 @@ export default async function Home() {
   const waits = await getAllWaits();
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-14 px-5 py-10 sm:gap-16 sm:py-16">
-      <header className="flex flex-col gap-4">
-        <span className="label-mono text-accent opacity-100">Border waits · Pump prices · Savings</span>
+    <>
+    <header className="hero-band text-white">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-5 pt-10 sm:pt-16">
+        <span className="label-mono text-sun opacity-100">Border waits · Pump prices · Savings</span>
         <h1 className="text-4xl sm:text-6xl font-normal tracking-[-0.035em] leading-[1.02]">
           Cross-Border Gas Tools
         </h1>
-        <p className="max-w-xl text-base sm:text-lg leading-relaxed opacity-70">
+        <p className="max-w-xl text-base sm:text-lg leading-relaxed opacity-85">
           Decide whether the trip across the border is worth it. Pick your crossing for live wait times and a savings estimate based on local pump prices.
         </p>
-      </header>
+      </div>
+      <div className="mt-6 h-36 sm:aspect-[1200/260] sm:h-auto">
+        <BorderScene />
+      </div>
+    </header>
+
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-14 px-5 py-10 sm:gap-16 sm:py-14">
+      <section className="flex flex-col gap-4">
+        <header className="section-head">
+          <h2 className="text-xl font-medium tracking-tight">Live at the border</h2>
+          <p className="label-mono">Camera stills · refresh every 5 min</p>
+        </header>
+        <LiveCameras revalidateSec={revalidate} />
+      </section>
 
       <section className="flex flex-col gap-4">
-        <header className="flex flex-col gap-1.5 border-t border-foreground pt-4">
+        <header className="section-head">
           <h2 className="text-xl font-medium tracking-tight">Pick a crossing</h2>
           <p className="label-mono tabular-nums">
             To US (CBP) · To CA (CBSA) · updates every 5 min
@@ -31,7 +47,7 @@ export default async function Home() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <header className="flex flex-col gap-1.5 border-t border-foreground pt-4">
+        <header className="section-head">
           <h2 className="text-xl font-medium tracking-tight">Quick price converter</h2>
           <p className="text-sm opacity-70">
             See what a US/gal price means in CAD/L (or vice versa). Updates as you type.
@@ -52,5 +68,6 @@ export default async function Home() {
         </Link>
       </footer>
     </main>
+    </>
   );
 }

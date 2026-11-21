@@ -8,6 +8,8 @@ import {
 } from "@/data/crossings";
 import { CA_MARKET_PRICES, US_STATE_PRICES } from "@/data/prices.generated";
 import { SavingsCard } from "@/components/SavingsCard";
+import { withCacheBust } from "@/lib/camera";
+import { BorderScene } from "@/components/BorderScene";
 import { tier, type Tone } from "@/components/WaitTimeBadge";
 import {
   getAllWaits,
@@ -17,14 +19,6 @@ import {
 } from "@/lib/wait-times";
 
 export const revalidate = 300;
-
-// Camera hosts serve the current still at a fixed URL, so a browser will reuse
-// the frame it cached on the last visit. Bucket a cache-buster to the revalidate
-// window: fresh on every regeneration, stable within one.
-function withCacheBust(url: string): string {
-  const bucket = Math.floor(Date.now() / (revalidate * 1000));
-  return `${url}${url.includes("?") ? "&" : "?"}t=${bucket}`;
-}
 
 // The subset of Tone that actually reaches a rendered number. "muted" means
 // there's no number to colour (closed, or no data), so it never needs an
@@ -84,27 +78,35 @@ export default async function CrossingPage({
     .at(0)!;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-8 sm:py-12">
+    <>
+    <header className="hero-band text-white">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-6 sm:pt-10">
       <Link
         href="/"
-        className="label-mono self-start -ml-1 px-1 py-1 hover:opacity-100 hover:text-accent"
+        className="label-mono self-start -ml-1 px-1 py-1 opacity-80 hover:opacity-100"
       >
         ← All crossings
       </Link>
 
-      <header className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         <h1 className="text-4xl sm:text-5xl font-normal tracking-[-0.035em] leading-[1.05]">
           {crossing.name}
         </h1>
-        <p className="text-sm opacity-70">
+        <p className="text-sm opacity-85">
           {PROVINCE_LABELS[crossing.province]} · {crossing.usState} ·{" "}
           {crossing.canadianTown} ⇄ {crossing.americanTown}
         </p>
         {crossing.notes && (
-          <p className="text-xs opacity-60">{crossing.notes}</p>
+          <p className="text-xs opacity-75">{crossing.notes}</p>
         )}
-      </header>
+      </div>
+      </div>
+      <div className="mt-4 h-28 sm:aspect-[1200/260] sm:h-auto">
+        <BorderScene />
+      </div>
+    </header>
 
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-8 sm:py-12">
       <section className="grid gap-px border border-line bg-line sm:grid-cols-2">
         <UsBoundCard
           wait={usBound}
@@ -118,7 +120,7 @@ export default async function CrossingPage({
 
       {(crossing.cameras.length > 0 || crossing.cameraSources.length > 0) && (
         <section className="flex flex-col gap-3">
-          <h2 className="label-mono border-t border-foreground pt-3">Live cameras</h2>
+          <h2 className="section-head label-mono">Live cameras</h2>
           {crossing.cameras.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {crossing.cameras.map((cam) => (
@@ -128,7 +130,7 @@ export default async function CrossingPage({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={withCacheBust(cam.imageUrl)}
+                    src={withCacheBust(cam.imageUrl, revalidate)}
                     alt={cam.label}
                     className="aspect-video w-full bg-surface-muted object-cover"
                     loading="lazy"
@@ -174,7 +176,7 @@ export default async function CrossingPage({
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className="label-mono border-t border-foreground pt-3">
+        <h2 className="section-head label-mono">
           Is the trip worth it?
         </h2>
         <SavingsCard
@@ -198,6 +200,7 @@ export default async function CrossingPage({
         </Link>
       </footer>
     </main>
+    </>
   );
 }
 
