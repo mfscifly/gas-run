@@ -26,7 +26,9 @@ jobs:
       - run: pip install xlrd==2.0.2
 
       # Exit 3 means the file was written but some market moved more than the
-      # script's MAX_RUN_CHANGE. Any other non-zero fails the run, which emails.
+      # script's MAX_RUN_CHANGE. Exit 4 means one source failed and its side
+      # kept last run's values: ship the other side, then fail the run below.
+      # Any other non-zero fails the run, which emails.
       - name: Regenerate price defaults
         id: refresh
         run: |
@@ -37,6 +39,8 @@ jobs:
           case "$code" in
             0) echo "review=false" >> "$GITHUB_OUTPUT" ;;
             3) echo "review=true" >> "$GITHUB_OUTPUT" ;;
+            4) echo "review=false" >> "$GITHUB_OUTPUT"
+               echo "partial=true" >> "$GITHUB_OUTPUT" ;;
             *) exit "$code" ;;
           esac
 
@@ -104,3 +108,11 @@ jobs:
               --base "${GITHUB_REF_NAME}" \
               --head "$BRANCH"
           fi
+
+      # A source failed but the other side still shipped. Fail the run so the
+      # failure email goes out instead of prices silently going stale.
+      - name: Flag a failed source
+        if: steps.refresh.outputs.partial == 'true'
+        run: |
+          echo "::error::One price source failed; its prices were kept from last run. See the refresh step log."
+          exit 1
