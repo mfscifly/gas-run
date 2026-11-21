@@ -1,5 +1,6 @@
 # gas-tools
 
+**Gas Run** (user-facing name; repo and Netlify site are still `gas-tools` / `gastools`).
 Cross-border gas price + savings tool. Successor to gastools.netlify.app.
 
 ## Stack

@@ -10,14 +10,14 @@ import { withCacheBust } from "@/lib/camera";
 
 export const revalidate = 300;
 
-const title = "Border cameras | Cross-Border Gas Tools";
+const title = "Border cameras | Gas Run";
 const description =
   "Live camera stills from Canada-US land crossings, grouped by province, refreshed every 5 minutes.";
 
 export const metadata: Metadata = {
   title,
   description,
-  openGraph: { type: "website", siteName: "Cross-Border Gas Tools", title, description, url: "/cameras" },
+  openGraph: { type: "website", siteName: "Gas Run", title, description, url: "/cameras" },
   twitter: { card: "summary_large_image", title, description },
 };
 

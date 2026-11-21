@@ -46,7 +46,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const c = getCrossing(slug);
   if (!c) return { title: "Crossing not found" };
-  const title = `${c.name} | Cross-Border Gas Tools`;
+  const title = `${c.name} | Gas Run`;
   const description = `Live wait time and savings calculator for the ${c.name} crossing (${c.canadianTown} ⇄ ${c.americanTown}).`;
   // openGraph/twitter are replaced wholesale, not merged, so restate them here
   // or shared links would carry the homepage title. The images come from the
@@ -54,7 +54,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    openGraph: { type: "website", siteName: "Cross-Border Gas Tools", title, description, url: `/crossings/${c.slug}` },
+    openGraph: { type: "website", siteName: "Gas Run", title, description, url: `/crossings/${c.slug}` },
     twitter: { card: "summary_large_image", title, description },
   };
 }

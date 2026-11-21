@@ -88,7 +88,7 @@ export async function renderShareCard({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Mark size={44} />
-            <span style={{ fontSize: 30, letterSpacing: -0.5 }}>Gas Tools</span>
+            <span style={{ fontSize: 30, letterSpacing: -0.5 }}>Gas Run</span>
           </div>
           <span style={{ ...mono, opacity: 0.8 }}>gastools.netlify.app</span>
         </div>

@@ -1,6 +1,6 @@
 import { OG_CONTENT_TYPE, OG_SIZE, renderShareCard } from "@/lib/og";
 
-export const alt = "Cross-Border Gas Tools: live border waits and gas savings";
+export const alt = "Gas Run: live border waits and gas savings";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 

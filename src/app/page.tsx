@@ -16,7 +16,7 @@ export default async function Home() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-5 pt-10 sm:pt-16">
         <span className="label-mono text-sun opacity-100">Border waits · Pump prices · Savings</span>
         <h1 className="text-4xl sm:text-6xl font-normal tracking-[-0.035em] leading-[1.02]">
-          Cross-Border Gas Tools
+          Gas Run
         </h1>
         <p className="max-w-xl text-base sm:text-lg leading-relaxed opacity-85">
           Decide whether the trip across the border is worth it. Pick your crossing for live wait times and a savings estimate based on local pump prices.

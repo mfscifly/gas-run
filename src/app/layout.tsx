@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_NAME = "Cross-Border Gas Tools";
+const SITE_NAME = "Gas Run";
+const HOME_TITLE = "Gas Run: cross-border gas savings and border wait times";
 const SITE_DESCRIPTION =
   "Compare US/Canada gas prices, estimate cross-border fuel savings, and check live wait times at every Canada-US land crossing.";
 
@@ -22,20 +23,20 @@ export const metadata: Metadata = {
   // Absolute base for the og:image / twitter:image URLs Next generates from
   // the opengraph-image and twitter-image files.
   metadataBase: new URL("https://gastools.netlify.app"),
-  title: SITE_NAME,
+  title: HOME_TITLE,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: HOME_TITLE,
     description: SITE_DESCRIPTION,
     url: "/",
     locale: "en_CA",
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
+    title: HOME_TITLE,
     description: SITE_DESCRIPTION,
   },
 };
@@ -68,7 +69,7 @@ export default function RootLayout({
               className="-ml-1 inline-flex items-center gap-2.5 px-1 py-1 text-[15px] font-medium tracking-tight"
             >
               <LogoMark className="h-6 w-6" />
-              Gas Tools
+              Gas Run
             </Link>
             <span className="label-mono">Canada – US</span>
           </div>
