@@ -12,34 +12,34 @@ import type {
 // self service. Monthly, so this is the most recent month published. Each
 // crossing is keyed to the surveyed market nearest it, via Crossing.caMarket.
 // Geography members: Vancouver 16, Calgary 15, Regina 12, Winnipeg 11, Toronto 9, Thunder Bay 10, Ottawa-Gatineau 8, Montreal 7, Saint John 5.
-const CA_PRICE_UPDATED = "2026-09-01";
+const CA_PRICE_UPDATED = "2026-10-01";
 
 // US defaults: EIA "Weekly Retail Gasoline and Diesel Prices", regular, all
 // formulations, from pswrgvwall.xls sheet "Data 3". EIA only breaks out a
 // handful of states weekly, so states it does not cover fall back to their
 // PADD region, noted per entry.
-const US_PRICE_UPDATED = "2026-11-09";
+const US_PRICE_UPDATED = "2026-11-16";
 
 export const CA_MARKET_PRICES: Record<CaMarket, CaMarketPriceDefault> = {
-  Vancouver: { cadPerL: 2.095, updatedAt: CA_PRICE_UPDATED },
-  Calgary: { cadPerL: 1.673, updatedAt: CA_PRICE_UPDATED },
-  Regina: { cadPerL: 1.740, updatedAt: CA_PRICE_UPDATED },
-  Winnipeg: { cadPerL: 1.715, updatedAt: CA_PRICE_UPDATED },
-  Toronto: { cadPerL: 1.837, updatedAt: CA_PRICE_UPDATED },
-  ThunderBay: { cadPerL: 1.758, updatedAt: CA_PRICE_UPDATED },
-  Ottawa: { cadPerL: 1.784, updatedAt: CA_PRICE_UPDATED },
-  Montreal: { cadPerL: 1.984, updatedAt: CA_PRICE_UPDATED },
-  SaintJohn: { cadPerL: 1.925, updatedAt: CA_PRICE_UPDATED },
+  Vancouver: { cadPerL: 2.069, updatedAt: CA_PRICE_UPDATED },
+  Calgary: { cadPerL: 1.579, updatedAt: CA_PRICE_UPDATED },
+  Regina: { cadPerL: 1.789, updatedAt: CA_PRICE_UPDATED },
+  Winnipeg: { cadPerL: 1.730, updatedAt: CA_PRICE_UPDATED },
+  Toronto: { cadPerL: 1.790, updatedAt: CA_PRICE_UPDATED },
+  ThunderBay: { cadPerL: 1.837, updatedAt: CA_PRICE_UPDATED },
+  Ottawa: { cadPerL: 1.728, updatedAt: CA_PRICE_UPDATED },
+  Montreal: { cadPerL: 1.921, updatedAt: CA_PRICE_UPDATED },
+  SaintJohn: { cadPerL: 1.865, updatedAt: CA_PRICE_UPDATED },
 };
 
 export const US_STATE_PRICES: Record<UsState, UsStatePriceDefault> = {
-  WA: { usdPerGal: 4.874, updatedAt: US_PRICE_UPDATED }, // state series
-  MT: { usdPerGal: 3.946, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
-  ND: { usdPerGal: 3.868, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  MN: { usdPerGal: 3.849, updatedAt: US_PRICE_UPDATED }, // state series
-  MI: { usdPerGal: 3.868, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
-  NY: { usdPerGal: 4.116, updatedAt: US_PRICE_UPDATED }, // state series
-  VT: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  NH: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
-  ME: { usdPerGal: 4.060, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  WA: { usdPerGal: 4.714, updatedAt: US_PRICE_UPDATED }, // state series
+  MT: { usdPerGal: 3.696, updatedAt: US_PRICE_UPDATED }, // PADD 4 Rocky Mountain
+  ND: { usdPerGal: 3.604, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  MN: { usdPerGal: 3.608, updatedAt: US_PRICE_UPDATED }, // state series
+  MI: { usdPerGal: 3.604, updatedAt: US_PRICE_UPDATED }, // PADD 2 Midwest
+  NY: { usdPerGal: 4.063, updatedAt: US_PRICE_UPDATED }, // state series
+  VT: { usdPerGal: 3.908, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  NH: { usdPerGal: 3.908, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
+  ME: { usdPerGal: 3.908, updatedAt: US_PRICE_UPDATED }, // PADD 1A New England
 };
