@@ -34,6 +34,9 @@ export default async function Home() {
           <p className="label-mono">Camera stills · refresh every 5 min</p>
         </header>
         <LiveCameras revalidateSec={revalidate} />
+        <Link href="/cameras" className="link self-start text-sm">
+          See all border cameras →
+        </Link>
       </section>
 
       <section className="flex flex-col gap-4">
