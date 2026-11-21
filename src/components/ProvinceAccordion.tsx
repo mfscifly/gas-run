@@ -13,14 +13,31 @@ type Props = {
   data: WaitsData;
 };
 
-function shortestUsBound(crossings: Crossing[], data: WaitsData) {
-  let best: number | null = null;
+// The province row summarizes US-bound waits as a range plus the quickest
+// crossing. Showing only the shortest wait ("no wait to US") read as "no
+// waits anywhere in BC" while another BC crossing sat at 30 minutes.
+type UsBoundSummary = {
+  min: number;
+  max: number;
+  quickest: Crossing[]; // every crossing tied at `min`
+};
+
+function summarizeUsBound(crossings: Crossing[], data: WaitsData): UsBoundSummary | null {
+  const posted: { c: Crossing; d: number }[] = [];
   for (const c of crossings) {
     const w = getCrossingWaits(c, data).usBound;
-    const d = w?.delayMin;
-    if (typeof d === "number" && (best === null || d < best)) best = d;
+    if (w?.status === "open" && typeof w.delayMin === "number") {
+      posted.push({ c, d: w.delayMin });
+    }
   }
-  return best;
+  if (posted.length === 0) return null;
+  const min = Math.min(...posted.map((p) => p.d));
+  const max = Math.max(...posted.map((p) => p.d));
+  return { min, max, quickest: posted.filter((p) => p.d === min).map((p) => p.c) };
+}
+
+function waitText(min: number): string {
+  return min === 0 ? "no wait" : `${min} min`;
 }
 
 export function ProvinceAccordion({ data }: Props) {
@@ -35,7 +52,7 @@ export function ProvinceAccordion({ data }: Props) {
           data={data}
         />
       ))}
-      <p className="px-1 pt-1 text-xs opacity-60">
+      <p className="px-4 py-3 text-xs opacity-60">
         n/a means the border agency isn&apos;t posting a wait for that crossing
         right now. Small ports like Point Roberts don&apos;t always get one posted.
       </p>
@@ -52,7 +69,8 @@ function ProvinceRow({
   crossings: Crossing[];
   data: WaitsData;
 }) {
-  const min = shortestUsBound(crossings, data);
+  const us = summarizeUsBound(crossings, data);
+  const spread = us !== null && us.max > us.min;
 
   return (
     <details className="group">
@@ -63,13 +81,20 @@ function ProvinceRow({
           </span>
           <span className="text-xs opacity-60 tabular-nums">
             {crossings.length} crossing{crossings.length === 1 ? "" : "s"}
-            {min !== null && (
+            {us && (
               <>
                 <span className="mx-1.5 opacity-50">·</span>
-                {min === 0 ? "no wait to US" : `shortest to US ${min} min`}
+                {spread ? `to US ${us.min}–${us.max} min` : `to US ${waitText(us.min)}`}
               </>
             )}
           </span>
+          {us && spread && (
+            <span className="truncate text-xs opacity-60 tabular-nums">
+              Quickest: {us.quickest[0].name}
+              {us.quickest.length > 1 && ` +${us.quickest.length - 1}`},{" "}
+              {waitText(us.min)}
+            </span>
+          )}
         </div>
         <Chevron />
       </summary>
