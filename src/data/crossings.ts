@@ -49,6 +49,11 @@ export type Crossing = {
   cameras: Camera[];
   cameraSources: CameraSource[];
   notes?: string;
+  // IANA zone of the Canadian side, when it differs from the province default.
+  timeZone?: string;
+  // Shown when a wait time is missing, to say why (e.g. a small port the
+  // agencies don't always post for).
+  waitNote?: string;
 };
 
 export type CaMarketPriceDefault = { cadPerL: number; updatedAt: string };
@@ -63,6 +68,23 @@ export const PROVINCE_LABELS: Record<Province, string> = {
   QC: "Quebec",
   NB: "New Brunswick",
 };
+
+// IANA zones only, never fixed offsets or PST/PDT: BC switched to permanent
+// UTC-7 in November 2026 and tzdata, not this file, is what tracks changes
+// like that. Quebec shares Toronto's rules; Fort Frances overrides to Central.
+export const PROVINCE_TIME_ZONES: Record<Province, string> = {
+  BC: "America/Vancouver",
+  AB: "America/Edmonton",
+  SK: "America/Regina",
+  MB: "America/Winnipeg",
+  ON: "America/Toronto",
+  QC: "America/Toronto",
+  NB: "America/Moncton",
+};
+
+export function crossingTimeZone(c: Crossing): string {
+  return c.timeZone ?? PROVINCE_TIME_ZONES[c.province];
+}
 
 export const CA_MARKET_LABELS: Record<CaMarket, string> = {
   Vancouver: "Vancouver",
@@ -177,6 +199,8 @@ export const CROSSINGS: Crossing[] = [
     ],
     notes:
       "Pene-xclave; only useful if you live in Tsawwassen. No dedicated border cam.",
+    waitNote:
+      "Point Roberts is a small port, and CBP and CBSA don't always post a wait time for it.",
   },
   {
     slug: "sumas-huntingdon",
@@ -280,6 +304,7 @@ export const CROSSINGS: Crossing[] = [
     cbpPortNumber: "360401",
     cbsaOffice: "Fort Frances Bridge",
     canadianTown: "Fort Frances, ON",
+    timeZone: "America/Winnipeg", // Rainy River district keeps Central time
     americanTown: "International Falls, MN",
     cameras: [],
     cameraSources: [
