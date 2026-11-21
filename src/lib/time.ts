@@ -127,3 +127,28 @@ export function formatUpdatedClock(
   // use the ordinary width so both feeds render identically everywhere.
   return text.replace(/ /g, " ");
 }
+
+// Price-default dates are calendar dates ("2026-10-01"), not instants, so they
+// are read in UTC to keep the day from shifting. StatCan's is the first of the
+// surveyed month and EIA's is the survey week, so each gets its own wording.
+function calendarDate(iso: string): Date | null {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) : null;
+}
+
+function withYearIfOld(d: Date, now: Date, opts: Intl.DateTimeFormatOptions): string {
+  const year = d.getUTCFullYear() !== now.getUTCFullYear() ? { year: "numeric" as const } : {};
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", ...opts, ...year }).format(d);
+}
+
+// "2026-10-01" -> "October" (or "October 2025" in another year).
+export function formatPriceMonth(iso: string, now: Date = new Date()): string {
+  const d = calendarDate(iso);
+  return d ? withYearIfOld(d, now, { month: "long" }) : iso;
+}
+
+// "2026-11-16" -> "Nov 16" (or "Nov 16, 2025" in another year).
+export function formatPriceWeek(iso: string, now: Date = new Date()): string {
+  const d = calendarDate(iso);
+  return d ? withYearIfOld(d, now, { month: "short", day: "numeric" }) : iso;
+}
