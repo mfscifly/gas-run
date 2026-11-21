@@ -111,7 +111,7 @@ export default async function CrossingPage({
         )}
       </div>
       </div>
-      <div className="mt-1 h-14 sm:mt-4 sm:aspect-[1200/260] sm:h-auto">
+      <div className="mt-1 aspect-[1200/260] sm:mt-4">
         <BorderScene />
       </div>
     </header>
