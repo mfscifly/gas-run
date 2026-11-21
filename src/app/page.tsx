@@ -22,7 +22,7 @@ export default async function Home() {
           Decide whether the trip across the border is worth it. Pick your crossing for live wait times and a savings estimate based on local pump prices.
         </p>
       </div>
-      <div className="mt-2 h-20 sm:mt-6 sm:aspect-[1200/260] sm:h-auto">
+      <div className="mt-2 aspect-[1200/260] sm:mt-6">
         <BorderScene />
       </div>
     </header>

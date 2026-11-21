@@ -45,7 +45,7 @@ export default function CamerasPage() {
             minutes. Tap a crossing for its wait times and savings.
           </p>
         </div>
-        <div className="mt-4 h-24 sm:aspect-[1200/260] sm:h-auto">
+        <div className="mt-4 aspect-[1200/260]">
           <BorderScene idPrefix="cameras-scene" />
         </div>
       </header>

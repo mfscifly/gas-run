@@ -3,7 +3,8 @@
 // site and inside the Satori share card (src/lib/og.tsx).
 //
 // The viewBox skips the empty sky above y=140, so a box with the same aspect
-// (1200:260) shows the whole scene; shorter boxes crop the top.
+// (1200:260) shows the whole scene; shorter boxes crop the top and cut off
+// the sun, so every hero uses that aspect at all widths.
 //
 // Smooth curves and soft gradients only: no hard polygon edges.
 //
