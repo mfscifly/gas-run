@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
-import type { Crossing } from "@/data/crossings";
+import { crossingTimeZone, type Crossing } from "@/data/crossings";
+import { parseCbpUpdateTime, parseCbsaUpdateTime } from "@/lib/time";
 
 const CBP_FEED_URL = "https://bwt.cbp.gov/xml/bwt.xml";
 const CBSA_FEED_URL = "https://www.cbsa-asfc.gc.ca/bwt-taf/bwt-eng.csv";
@@ -10,7 +11,12 @@ export type LaneStatus = "open" | "closed" | "update-pending";
 export type WaitTime = {
   delayMin: number | null;
   status: LaneStatus;
+  // The feed's own text, kept only as a fallback for display when it can't be
+  // parsed. Render updatedAt through formatUpdatedClock instead.
   updateTime: string | null;
+  // ISO instant of updateTime, or null if the feed's format wasn't recognized.
+  // For CBSA this is filled in by getCrossingWaits, which knows the zone.
+  updatedAt: string | null;
 };
 
 export type CbpWait = WaitTime & {
@@ -38,6 +44,7 @@ type CbpLaneBlock = {
 
 type CbpPort = {
   port_number?: string | number;
+  date?: string;
   passenger_vehicle_lanes?: {
     standard_lanes?: CbpLaneBlock;
     NEXUS_SENTRI_lanes?: CbpLaneBlock;
@@ -84,6 +91,10 @@ function toCbpWait(port: CbpPort): { portNumber: string; wait: CbpWait } | null 
   const portNumber = port.port_number?.toString();
   if (!portNumber) return null;
   const std = parseDelay(port.passenger_vehicle_lanes?.standard_lanes);
+  const updateTime = stripCbpUpdatePrefix(
+    port.passenger_vehicle_lanes?.standard_lanes?.update_time ?? null,
+  );
+  const updatedAt = parseCbpUpdateTime(updateTime, port.date?.toString());
   return {
     portNumber,
     wait: {
@@ -91,7 +102,8 @@ function toCbpWait(port: CbpPort): { portNumber: string; wait: CbpWait } | null 
       nexusDelayMin: parseDelay(port.passenger_vehicle_lanes?.NEXUS_SENTRI_lanes),
       readyLanesDelayMin: parseDelay(port.passenger_vehicle_lanes?.ready_lanes),
       status: deriveCbpStatus(port, std),
-      updateTime: stripCbpUpdatePrefix(port.passenger_vehicle_lanes?.standard_lanes?.update_time ?? null),
+      updateTime,
+      updatedAt: updatedAt?.toISOString() ?? null,
     },
   };
 }
@@ -166,7 +178,7 @@ function parseCbsaCsv(csv: string): Map<string, WaitTime> {
     const travCaRaw = cols[5] ?? "";
     const { delayMin, status } = parseCbsaDelay(travCaRaw);
     if (!office) continue;
-    map.set(office, { delayMin, status, updateTime });
+    map.set(office, { delayMin, status, updateTime, updatedAt: null });
   }
   return map;
 }
@@ -197,12 +209,20 @@ export function getCrossingWaits(
   crossing: Crossing,
   data: WaitsData,
 ): CrossingWaits {
+  const ca = crossing.cbsaOffice
+    ? data.byCbsaOffice.get(crossing.cbsaOffice) ?? null
+    : null;
   return {
     usBound: crossing.cbpPortNumber
       ? data.byCbpPort.get(crossing.cbpPortNumber) ?? null
       : null,
-    caBound: crossing.cbsaOffice
-      ? data.byCbsaOffice.get(crossing.cbsaOffice) ?? null
-      : null,
+    // CBSA reports wall-clock time at the port, so it can only become an
+    // instant once we know which crossing (and therefore which zone) it is.
+    caBound: ca && {
+      ...ca,
+      updatedAt:
+        parseCbsaUpdateTime(ca.updateTime, crossingTimeZone(crossing))?.toISOString() ??
+        null,
+    },
   };
 }

@@ -4,6 +4,7 @@ import {
   CROSSINGS,
   PROVINCE_LABELS,
   CA_MARKET_LABELS,
+  crossingTimeZone,
   getCrossing,
 } from "@/data/crossings";
 import { CA_MARKET_PRICES, US_STATE_PRICES } from "@/data/prices.generated";
@@ -15,6 +16,8 @@ import {
   type CbpWait,
   type WaitTime,
 } from "@/lib/wait-times";
+import { summarizeTripWait } from "@/lib/trip-wait";
+import { formatUpdatedClock } from "@/lib/time";
 
 export const revalidate = 300;
 
@@ -69,6 +72,7 @@ export default async function CrossingPage({
 
   const waitsData = await getAllWaits();
   const { usBound, caBound } = getCrossingWaits(crossing, waitsData);
+  const timeZone = crossingTimeZone(crossing);
 
   const caPrice = CA_MARKET_PRICES[crossing.caMarket];
   const usStatePrice = US_STATE_PRICES[crossing.usState];
@@ -102,10 +106,14 @@ export default async function CrossingPage({
         <UsBoundCard
           wait={usBound}
           tracked={crossing.cbpPortNumber !== null}
+          timeZone={timeZone}
+          waitNote={crossing.waitNote}
         />
         <CaBoundCard
           wait={caBound}
           tracked={crossing.cbsaOffice !== null}
+          timeZone={timeZone}
+          waitNote={crossing.waitNote}
         />
       </section>
 
@@ -177,6 +185,7 @@ export default async function CrossingPage({
             label: `${CA_MARKET_LABELS[crossing.caMarket]} + ${crossing.usState} averages`,
             updatedAt: prefillUpdated,
           }}
+          tripWait={summarizeTripWait(usBound, caBound)}
         />
       </section>
 
@@ -197,9 +206,13 @@ export default async function CrossingPage({
 function UsBoundCard({
   wait,
   tracked,
+  timeZone,
+  waitNote,
 }: {
   wait: CbpWait | null;
   tracked: boolean;
+  timeZone: string;
+  waitNote?: string;
 }) {
   return (
     <DirectionCard
@@ -215,9 +228,10 @@ function UsBoundCard({
             ]
           : []
       }
+      timeZone={timeZone}
       missingMessage={
         tracked
-          ? "Wait time unavailable right now."
+          ? (waitNote ?? "No wait time posted right now.")
           : "Not tracked in the CBP feed."
       }
     />
@@ -227,9 +241,13 @@ function UsBoundCard({
 function CaBoundCard({
   wait,
   tracked,
+  timeZone,
+  waitNote,
 }: {
   wait: WaitTime | null;
   tracked: boolean;
+  timeZone: string;
+  waitNote?: string;
 }) {
   return (
     <DirectionCard
@@ -238,9 +256,10 @@ function CaBoundCard({
       wait={wait}
       sourceLabel="CBSA"
       lanes={[]}
+      timeZone={timeZone}
       missingMessage={
         tracked
-          ? "Wait time unavailable right now."
+          ? (waitNote ?? "No wait time posted right now.")
           : "Not tracked in the CBSA feed."
       }
     />
@@ -253,6 +272,7 @@ function DirectionCard({
   wait,
   sourceLabel,
   lanes,
+  timeZone,
   missingMessage,
 }: {
   kicker: string;
@@ -260,12 +280,19 @@ function DirectionCard({
   wait: WaitTime | null;
   sourceLabel: string;
   lanes: { label: string; value: number | null }[];
+  timeZone: string;
   missingMessage: string;
 }) {
   const renderedLanes = lanes.filter(
     (l): l is { label: string; value: number } => typeof l.value === "number",
   );
   const { tone } = tier(wait?.delayMin ?? null, wait?.status);
+  // Both feeds go through the same formatter in the crossing's own zone, so
+  // the two cards always read alike ("updated 9:00 AM"). The raw feed text is
+  // a last resort for a format we don't recognize yet.
+  const updated = wait?.updatedAt
+    ? formatUpdatedClock(new Date(wait.updatedAt), timeZone)
+    : wait?.updateTime;
 
   return (
     <div className="rounded-xl border border-black/10 dark:border-white/15 p-3 sm:p-4 flex flex-col gap-0.5">
@@ -294,9 +321,9 @@ function DirectionCard({
               ))}
             </div>
           )}
-          {wait.updateTime && (
+          {updated && (
             <span className="text-[11px] opacity-50 mt-1">
-              {sourceLabel} · updated {wait.updateTime}
+              {sourceLabel} · updated {updated}
             </span>
           )}
         </>

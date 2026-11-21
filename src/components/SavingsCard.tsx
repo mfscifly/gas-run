@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { calculateSavings, type SavingsResult } from "@/lib/calc";
 import { useFxRate } from "@/lib/use-fx";
+import { formatWaitDuration, type TripWait } from "@/lib/trip-wait";
 
 const TANK_STORAGE_KEY = "gas-tools.tankSizeL";
 const DEFAULT_TANK_L = 60;
@@ -14,7 +15,25 @@ export type SavingsCardProps = {
   prefillUsdPerGal?: number;
   prefillCadPerL?: number;
   prefillMeta?: { label: string; updatedAt: string };
+  // Live border waits for this crossing, so the verdict weighs time as well
+  // as money. Omitted where there's no crossing context.
+  tripWait?: TripWait;
 };
+
+// One line that puts the money next to the time it costs, e.g.
+// "$15 saved, about 55 minutes of waiting. That's about $16 an hour."
+export function waitVerdictLine(savingsCad: number, wait: TripWait): string {
+  const saved = savingsCad > 0;
+  const money = `$${Math.round(Math.abs(savingsCad))} ${saved ? "saved" : "more"}`;
+  if (wait.closed) return `${money}, but the crossing is closed in one direction right now.`;
+  if (wait.totalMin === null) return `${money}; border wait times aren't posted right now.`;
+  if (wait.totalMin === 0) return `${money}, with no wait at the border right now.`;
+  const time = `${wait.partial ? "at least" : "about"} ${formatWaitDuration(wait.totalMin)} of waiting`;
+  const note = wait.partial ? " (one direction isn't posted)" : "";
+  if (!saved) return `${money}, plus ${time}${note}.`;
+  const perHour = Math.round(savingsCad / (wait.totalMin / 60));
+  return `${money}, ${time}${note}. That's about $${perHour} an hour.`;
+}
 
 function parse(value: string): number | null {
   if (value.trim() === "") return null;
@@ -34,6 +53,7 @@ export function SavingsCard({
   prefillUsdPerGal,
   prefillCadPerL,
   prefillMeta,
+  tripWait,
 }: SavingsCardProps) {
   const fx = useFxRate();
 
@@ -84,6 +104,7 @@ export function SavingsCard({
         big={`$${result.savingsCad.toFixed(2)}`}
         subtitle={`saved per ${tankSizeNum} L tank`}
         kicker="Worth the trip"
+        detail={tripWait && waitVerdictLine(result.savingsCad, tripWait)}
       />
     );
   } else {
@@ -93,6 +114,7 @@ export function SavingsCard({
         big={`$${Math.abs(result.savingsCad).toFixed(2)}`}
         subtitle={`more expensive per ${tankSizeNum} L tank`}
         kicker="Skip the trip"
+        detail={tripWait && waitVerdictLine(result.savingsCad, tripWait)}
       />
     );
   }
@@ -165,11 +187,13 @@ function Hero({
   big,
   subtitle,
   kicker,
+  detail,
 }: {
   tone: "good" | "bad";
   big: string;
   subtitle: string;
   kicker: string;
+  detail?: string;
 }) {
   const toneCls =
     tone === "good"
@@ -184,6 +208,11 @@ function Hero({
         {big}
       </span>
       <span className="text-sm opacity-80">{subtitle}</span>
+      {detail && (
+        <span className="mt-2 border-t border-current/20 pt-2 text-sm font-medium">
+          {detail}
+        </span>
+      )}
     </div>
   );
 }
