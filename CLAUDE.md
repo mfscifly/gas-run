@@ -1,6 +1,6 @@
-# gas-tools
+# gas-run
 
-**Gas Run** (user-facing name; the repo is still `gas-tools`).
+**Gas Run** (repo `mfscifly/gas-run`, renamed from `gas-tools` on 2026-11-21; GitHub redirects the old URL).
 Cross-border gas price + savings tool.
 
 ## Stack
@@ -39,6 +39,7 @@ Cross-border gas price + savings tool.
 - `src/data/prices.generated.ts` — price defaults, written whole by `scripts/refresh-prices.py`
 - `scripts/refresh-prices.py` — regenerates the price defaults from StatCan + EIA
 - `.github/workflows/refresh-prices.yml` — runs that script weekly; commits routine changes straight to main, routes moves over 15% to a rolling `prices/review` PR
+- `docs/readme/` — README banner (the OG card) and phone screenshots
 - `legacy/` — original vanilla HTML/JS site (gitignored, kept locally for reference)
 
 ## Env

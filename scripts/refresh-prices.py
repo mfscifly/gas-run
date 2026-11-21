@@ -95,7 +95,7 @@ EXIT_PARTIAL = 4
 # StatCan's WDS started answering Python's default "Python-urllib/x.y" agent
 # with 403 Forbidden in November 2026. Identify ourselves like a real client.
 HEADERS = {
-    "User-Agent": "gas-tools-price-refresh/1.0 (+https://github.com/mfscifly/gas-tools)",
+    "User-Agent": "gas-run-price-refresh/1.0 (+https://github.com/mfscifly/gas-run)",
     "Accept": "application/json, application/vnd.ms-excel, */*",
 }
 
