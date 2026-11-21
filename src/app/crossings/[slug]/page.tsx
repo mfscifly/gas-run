@@ -9,6 +9,8 @@ import {
 } from "@/data/crossings";
 import { CA_MARKET_PRICES, US_STATE_PRICES } from "@/data/prices.generated";
 import { SavingsCard } from "@/components/SavingsCard";
+import { withCacheBust } from "@/lib/camera";
+import { BorderScene } from "@/components/BorderScene";
 import { tier, type Tone } from "@/components/WaitTimeBadge";
 import {
   getAllWaits,
@@ -20,14 +22,6 @@ import { summarizeTripWait } from "@/lib/trip-wait";
 import { formatUpdatedClock } from "@/lib/time";
 
 export const revalidate = 300;
-
-// Camera hosts serve the current still at a fixed URL, so a browser will reuse
-// the frame it cached on the last visit. Bucket a cache-buster to the revalidate
-// window: fresh on every regeneration, stable within one.
-function withCacheBust(url: string): string {
-  const bucket = Math.floor(Date.now() / (revalidate * 1000));
-  return `${url}${url.includes("?") ? "&" : "?"}t=${bucket}`;
-}
 
 // The subset of Tone that actually reaches a rendered number. "muted" means
 // there's no number to colour (closed, or no data), so it never needs an
@@ -55,9 +49,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const c = getCrossing(slug);
   if (!c) return { title: "Crossing not found" };
+  const title = `${c.name} | Gas Run`;
+  const description = `Live wait time and savings calculator for the ${c.name} crossing (${c.canadianTown} ⇄ ${c.americanTown}).`;
+  // openGraph/twitter are replaced wholesale, not merged, so restate them here
+  // or shared links would carry the homepage title. The images come from the
+  // sibling opengraph-image / twitter-image files.
   return {
-    title: `${c.name} | Cross-Border Gas Tools`,
-    description: `Live wait time and savings calculator for the ${c.name} crossing (${c.canadianTown} ⇄ ${c.americanTown}).`,
+    title,
+    description,
+    openGraph: { type: "website", siteName: "Gas Run", title, description, url: `/crossings/${c.slug}` },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -81,28 +82,36 @@ export default async function CrossingPage({
     .at(0)!;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-6 sm:py-12">
+    <>
+    <header className="hero-band text-white">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-6 sm:pt-10">
       <Link
         href="/"
-        className="self-start text-sm opacity-70 hover:opacity-100 active:opacity-100 -ml-1 px-1 py-1"
+        className="label-mono self-start -ml-1 px-1 py-1 opacity-80 hover:opacity-100"
       >
         ← All crossings
       </Link>
 
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+      <div className="flex flex-col gap-3">
+        <h1 className="text-4xl sm:text-5xl font-normal tracking-[-0.035em] leading-[1.05]">
           {crossing.name}
         </h1>
-        <p className="text-sm opacity-80">
+        <p className="text-sm opacity-85">
           {PROVINCE_LABELS[crossing.province]} · {crossing.usState} ·{" "}
           {crossing.canadianTown} ⇄ {crossing.americanTown}
         </p>
         {crossing.notes && (
-          <p className="text-xs opacity-60">{crossing.notes}</p>
+          <p className="text-xs opacity-75">{crossing.notes}</p>
         )}
-      </header>
+      </div>
+      </div>
+      <div className="mt-4 h-28 sm:aspect-[1200/260] sm:h-auto">
+        <BorderScene />
+      </div>
+    </header>
 
-      <section className="grid gap-3 sm:grid-cols-2">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-8 sm:py-12">
+      <section className="grid gap-px border border-line bg-line sm:grid-cols-2">
         <UsBoundCard
           wait={usBound}
           tracked={crossing.cbpPortNumber !== null}
@@ -119,19 +128,19 @@ export default async function CrossingPage({
 
       {(crossing.cameras.length > 0 || crossing.cameraSources.length > 0) && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-xs uppercase tracking-wide opacity-70">Live cameras</h2>
+          <h2 className="section-head label-mono">Live cameras</h2>
           {crossing.cameras.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {crossing.cameras.map((cam) => (
                 <figure
                   key={cam.imageUrl}
-                  className="flex flex-col gap-2 rounded-xl overflow-hidden border border-black/10 dark:border-white/15"
+                  className="panel flex flex-col gap-2 overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={withCacheBust(cam.imageUrl)}
+                    src={withCacheBust(cam.imageUrl, revalidate)}
                     alt={cam.label}
-                    className="aspect-video w-full bg-black/5 dark:bg-white/5 object-cover"
+                    className="aspect-video w-full bg-surface-muted object-cover"
                     loading="lazy"
                   />
                   <figcaption className="px-3 pb-3 text-xs opacity-70 flex items-center justify-between gap-2">
@@ -140,7 +149,7 @@ export default async function CrossingPage({
                       href={cam.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline shrink-0"
+                      className="link shrink-0"
                     >
                       source
                     </a>
@@ -161,7 +170,7 @@ export default async function CrossingPage({
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="underline opacity-80 hover:opacity-100"
+                        className="link"
                       >
                         {s.label}
                       </a>
@@ -175,7 +184,7 @@ export default async function CrossingPage({
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-xs uppercase tracking-wide opacity-70">
+        <h2 className="section-head label-mono">
           Is the trip worth it?
         </h2>
         <SavingsCard
@@ -189,17 +198,18 @@ export default async function CrossingPage({
         />
       </section>
 
-      <footer className="border-t border-black/10 dark:border-white/15 pt-6 text-sm opacity-70">
+      <footer className="border-t border-line pt-6 text-sm opacity-70">
         <Link
           href={`https://www.gasbuddy.com/gaspricemap?country=usa&search=${encodeURIComponent(crossing.americanTown)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline"
+          className="link"
         >
           Live US gas prices near {crossing.americanTown} (GasBuddy)
         </Link>
       </footer>
     </main>
+    </>
   );
 }
 
@@ -295,8 +305,8 @@ function DirectionCard({
     : wait?.updateTime;
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/15 p-3 sm:p-4 flex flex-col gap-0.5">
-      <span className="text-xs uppercase tracking-wide opacity-70">
+    <div className="bg-surface p-4 sm:p-5 flex flex-col gap-0.5">
+      <span className="label-mono">
         <span aria-hidden className="mr-1">{arrow}</span>
         {kicker}
       </span>
@@ -304,7 +314,7 @@ function DirectionCard({
         <>
           <span
             className={[
-              "text-4xl sm:text-5xl font-semibold tabular-nums leading-none mt-1",
+              "text-5xl sm:text-6xl font-normal tracking-[-0.03em] tabular-nums leading-none mt-3",
               TEXT_TONE_CLASSES[tone],
             ].join(" ")}
           >
@@ -322,7 +332,7 @@ function DirectionCard({
             </div>
           )}
           {updated && (
-            <span className="text-[11px] opacity-50 mt-1">
+            <span className="font-mono text-[11px] opacity-50 mt-2">
               {sourceLabel} · updated {updated}
             </span>
           )}

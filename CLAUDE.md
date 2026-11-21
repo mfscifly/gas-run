@@ -1,11 +1,13 @@
 # gas-tools
 
-Cross-border gas price + savings tool. Successor to gastools.netlify.app.
+**Gas Run** (user-facing name; the repo is still `gas-tools`).
+Cross-border gas price + savings tool.
 
 ## Stack
 - Next.js 16 (App Router) + TypeScript
 - Tailwind v4 (`@import "tailwindcss"` in `globals.css`)
-- Deployed to Netlify at https://gastools.netlify.app (took over the site that
+- Deployed to Netlify at https://gasrun.netlify.app (renamed from gastools.netlify.app on
+  2026-11-21, so old gastools links no longer resolve; took over the site that
   used to build from `sumas-prairie-gas-calculator`, which is now private)
 
 ## Structure
@@ -18,6 +20,16 @@ Cross-border gas price + savings tool. Successor to gastools.netlify.app.
 - `src/components/SavingsCard.tsx` — client component; live savings hero, prefilled per crossing
 - `src/components/Calculator.tsx` — **dead code.** The v2 combined converter + savings
   component, superseded by `PriceConverter` + `SavingsCard`. Imported nowhere; safe to delete.
+- `src/app/globals.css` — theme tokens (light/dark) + shared `panel`, `field`, `label-mono`, `link` utilities.
+  Editorial look: hairlines, square corners, mono labels, border-blue brand (`--accent`, `--hero`)
+  with sun-yellow highlights inside blue areas; green/amber/rose are reserved for wait-time and savings tones.
+- `src/components/BorderScene.tsx` — flat SVG border scene used in the blue hero bands and the share cards
+- `src/components/LiveCameras.tsx` — homepage "Live at the border" strip of camera stills (`src/lib/camera.ts` cache-busts them)
+- `src/app/icon.svg`, `src/app/apple-icon.tsx` — favicon + iOS icon (brand mark hardcoded; keep in sync with `Logo.tsx`)
+- `src/app/opengraph-image.tsx`, `twitter-image.tsx` (+ per-crossing copies under `crossings/[slug]/`) —
+  link-preview cards, rendered by `src/lib/og.tsx` with the Geist woff files in `src/assets/fonts/`
+  (Latin subset only, so keep card text free of symbols like ⇄)
+- `src/components/Logo.tsx` — brand mark used in the site header (layout.tsx), which also holds the "Built by Daniel" footer
 - `src/components/ProvinceAccordion.tsx` — server component; native `<details>`/`<summary>` accordion grouped by province
 - `src/components/WaitTimeBadge.tsx` — colored pill (green/amber/red/muted); renders "Closed" for closed ports
 - `src/lib/calc.ts` — pure conversion + savings math
