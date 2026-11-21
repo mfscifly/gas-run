@@ -13,21 +13,31 @@ export default async function Home() {
   return (
     <>
     <header className="hero-band text-white">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-5 pt-10 sm:pt-16">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-2.5 px-5 pt-6 sm:gap-4 sm:pt-16">
         <span className="label-mono text-sun opacity-100">Border waits · Pump prices · Savings</span>
-        <h1 className="text-4xl sm:text-6xl font-normal tracking-[-0.035em] leading-[1.02]">
+        <h1 className="text-[2.5rem] sm:text-6xl font-normal tracking-[-0.035em] leading-[1.02]">
           Gas Run
         </h1>
-        <p className="max-w-xl text-base sm:text-lg leading-relaxed opacity-85">
+        <p className="max-w-xl text-sm sm:text-lg leading-relaxed opacity-85">
           Decide whether the trip across the border is worth it. Pick your crossing for live wait times and a savings estimate based on local pump prices.
         </p>
       </div>
-      <div className="mt-6 h-36 sm:aspect-[1200/260] sm:h-auto">
+      <div className="mt-2 h-20 sm:mt-6 sm:aspect-[1200/260] sm:h-auto">
         <BorderScene />
       </div>
     </header>
 
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-14 px-5 py-10 sm:gap-16 sm:py-14">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-14 px-5 py-6 sm:gap-16 sm:py-14">
+      <section className="flex flex-col gap-4">
+        <header className="section-head">
+          <h2 className="text-xl font-medium tracking-tight">Pick a crossing</h2>
+          <p className="label-mono tabular-nums">
+            To US (CBP) · To CA (CBSA) · updates every 5 min
+          </p>
+        </header>
+        <ProvinceAccordion data={waits} />
+      </section>
+
       <section className="flex flex-col gap-4">
         <header className="section-head">
           <h2 className="text-xl font-medium tracking-tight">Live at the border</h2>
@@ -37,16 +47,6 @@ export default async function Home() {
         <Link href="/cameras" className="link self-start text-sm">
           See all border cameras →
         </Link>
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <header className="section-head">
-          <h2 className="text-xl font-medium tracking-tight">Pick a crossing</h2>
-          <p className="label-mono tabular-nums">
-            To US (CBP) · To CA (CBSA) · updates every 5 min
-          </p>
-        </header>
-        <ProvinceAccordion data={waits} />
       </section>
 
       <section className="flex flex-col gap-4">
