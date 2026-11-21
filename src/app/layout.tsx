@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,7 +23,7 @@ const SITE_DESCRIPTION =
 export const metadata: Metadata = {
   // Absolute base for the og:image / twitter:image URLs Next generates from
   // the opengraph-image and twitter-image files.
-  metadataBase: new URL("https://gastools.netlify.app"),
+  metadataBase: new URL(SITE_URL),
   title: HOME_TITLE,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,

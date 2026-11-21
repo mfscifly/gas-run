@@ -1,8 +1,8 @@
-# Cross-Border Gas Tools
+# Gas Run
 
 Decide whether the trip across the border is worth it. Convert USD/gal ↔ CAD/L and estimate per-tank savings using a live USD-CAD exchange rate.
 
-Successor to [gastools.netlify.app](https://gastools.netlify.app/).
+Live at [gasrun.netlify.app](https://gasrun.netlify.app/).
 
 ## Setup
 

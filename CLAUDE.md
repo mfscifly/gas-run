@@ -1,12 +1,13 @@
 # gas-tools
 
-**Gas Run** (user-facing name; repo and Netlify site are still `gas-tools` / `gastools`).
-Cross-border gas price + savings tool. Successor to gastools.netlify.app.
+**Gas Run** (user-facing name; the repo is still `gas-tools`).
+Cross-border gas price + savings tool.
 
 ## Stack
 - Next.js 16 (App Router) + TypeScript
 - Tailwind v4 (`@import "tailwindcss"` in `globals.css`)
-- Deployed to Netlify at https://gastools.netlify.app (took over the site that
+- Deployed to Netlify at https://gasrun.netlify.app (renamed from gastools.netlify.app on
+  2026-11-21, so old gastools links no longer resolve; took over the site that
   used to build from `sumas-prairie-gas-calculator`, which is now private)
 
 ## Structure

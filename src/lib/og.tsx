@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { BorderScene, SCENE } from "@/components/BorderScene";
+import { SITE_HOST } from "@/lib/site";
 
 // Shared renderer for the link-preview cards (Open Graph + Twitter) on the
 // homepage and every crossing page: the blue hero band with the border scene,
@@ -90,7 +91,7 @@ export async function renderShareCard({
             <Mark size={44} />
             <span style={{ fontSize: 30, letterSpacing: -0.5 }}>Gas Run</span>
           </div>
-          <span style={{ ...mono, opacity: 0.8 }}>gastools.netlify.app</span>
+          <span style={{ ...mono, opacity: 0.8 }}>{SITE_HOST}</span>
         </div>
 
         <div
