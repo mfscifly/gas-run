@@ -35,6 +35,10 @@ export function ProvinceAccordion({ data }: Props) {
           data={data}
         />
       ))}
+      <p className="px-1 pt-1 text-xs opacity-60">
+        n/a means the border agency isn&apos;t posting a wait for that crossing
+        right now. Small ports like Point Roberts don&apos;t always get one posted.
+      </p>
     </div>
   );
 }
@@ -61,7 +65,8 @@ function ProvinceRow({
             {crossings.length} crossing{crossings.length === 1 ? "" : "s"}
             {min !== null && (
               <>
-                <span className="mx-1.5 opacity-50">·</span>shortest to US {min}m
+                <span className="mx-1.5 opacity-50">·</span>
+                {min === 0 ? "no wait to US" : `shortest to US ${min} min`}
               </>
             )}
           </span>

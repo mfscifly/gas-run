@@ -13,8 +13,9 @@ Rewrites that whole file. Run with --check to verify freshness without writing.
 
 Exit codes: 0 written or already current, 1 stale (--check) or a source broke
 or returned an insane value, 3 written but some market moved more than
-MAX_RUN_CHANGE since the last run. CI commits 0 straight to main and routes 3
-to a PR for a human to look at.
+MAX_RUN_CHANGE since the last run, 4 written but one source failed, so its
+side kept last run's values. CI commits 0 and 4 straight to main (then fails
+the run on 4 so someone hears about it) and routes 3 to a PR for a human.
 
 Usage:
     python3 scripts/refresh-prices.py [--check]
@@ -89,8 +90,26 @@ SANITY_MIN_USD_PER_GAL, SANITY_MAX_USD_PER_GAL = 1.50, 10.00
 # a week or a month, so anything past it gets a human look before it ships.
 MAX_RUN_CHANGE = 0.15
 EXIT_NEEDS_REVIEW = 3
+EXIT_PARTIAL = 4
+
+# StatCan's WDS started answering Python's default "Python-urllib/x.y" agent
+# with 403 Forbidden in November 2026. Identify ourselves like a real client.
+HEADERS = {
+    "User-Agent": "gas-tools-price-refresh/1.0 (+https://github.com/mfscifly/gas-tools)",
+    "Accept": "application/json, application/vnd.ms-excel, */*",
+}
 
 PRICE_LINE = re.compile(r"^\s+(\w+): \{ (?:cadPerL|usdPerGal): ([\d.]+),", re.M)
+DATE_LINE = re.compile(r'^const (CA|US)_PRICE_UPDATED = "([\d-]+)";', re.M)
+
+
+def previous(source: str, keys: list[str], side: str) -> tuple[dict[str, float], str] | None:
+    """Last run's values for one side, read back from the generated file."""
+    vals = {key: float(val) for key, val in PRICE_LINE.findall(source)}
+    dates = dict(DATE_LINE.findall(source))
+    if side not in dates or any(key not in vals for key in keys):
+        return None
+    return {key: vals[key] for key in keys}, dates[side]
 
 
 def fetch_canada() -> tuple[dict[str, float], str]:
@@ -106,7 +125,7 @@ def fetch_canada() -> tuple[dict[str, float], str]:
     req = urllib.request.Request(
         STATCAN_URL,
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
+        headers={**HEADERS, "Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=60) as r:
         body = json.load(r)
@@ -139,7 +158,8 @@ def fetch_canada() -> tuple[dict[str, float], str]:
 
 def fetch_us() -> tuple[dict[str, float], str]:
     """Latest EIA weekly price per state, in USD/gal."""
-    with urllib.request.urlopen(EIA_URL, timeout=120) as r:
+    req = urllib.request.Request(EIA_URL, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=120) as r:
         blob = r.read()
 
     book = xlrd.open_workbook(file_contents=blob)
@@ -223,14 +243,33 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    ca, ca_date = fetch_canada()
-    us, us_date = fetch_us()
-
     source = TARGET.read_text() if TARGET.exists() else ""
+
+    # Fetch each side on its own, so a StatCan outage no longer freezes the
+    # weekly US prices too (and vice versa). A failed side keeps last run's
+    # values; if both fail, or there is nothing to fall back on, give up.
+    failed = []
+    results = {}
+    for side, fetch, keys in (("CA", fetch_canada, CA_ORDER), ("US", fetch_us, US_ORDER)):
+        try:
+            results[side] = fetch()
+        except Exception as exc:  # noqa: BLE001 - any source failure is handled the same
+            print(f"{side} source failed: {exc!r}", file=sys.stderr)
+            kept = previous(source, keys, side)
+            if kept is None:
+                raise
+            failed.append(side)
+            results[side] = kept
+    if len(failed) == 2:
+        raise SystemExit("Both price sources failed.")
+    (ca, ca_date), (us, us_date) = results["CA"], results["US"]
+    status = EXIT_PARTIAL if failed else 0
+    if failed:
+        print(f"Kept last run's {failed[0]} prices; that source needs a look.", file=sys.stderr)
     block = render(ca, ca_date, us, us_date)
     if source == block:
         print(f"Prices already current (CA {ca_date}, US {us_date}).")
-        return 0
+        return status
 
     print(f"Prices are stale. Newest: CA {ca_date}, US {us_date}.")
     for market in CA_ORDER:
@@ -256,7 +295,7 @@ def main() -> int:
         print(f"\nMoved more than {MAX_RUN_CHANGE:.0%} since the last run:")
         print("\n".join(jumps))
         return EXIT_NEEDS_REVIEW
-    return 0
+    return status
 
 
 if __name__ == "__main__":
