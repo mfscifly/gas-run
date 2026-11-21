@@ -27,7 +27,7 @@ const TONE_CLASSES = {
     "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-emerald-500/25",
   warn: "bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-amber-500/25",
   bad: "bg-rose-500/15 text-rose-700 dark:text-rose-300 ring-rose-500/30",
-  muted: "bg-black/5 dark:bg-white/10 opacity-70 ring-black/10 dark:ring-white/15",
+  muted: "bg-surface-muted opacity-70 ring-line",
 } as const;
 
 export function WaitTimeBadge({ wait, srLabel, className }: Props) {
@@ -35,7 +35,7 @@ export function WaitTimeBadge({ wait, srLabel, className }: Props) {
   return (
     <span
       className={[
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset tabular-nums",
+        "inline-flex items-center gap-1 rounded-[3px] px-1.5 py-0.5 font-mono text-xs font-medium ring-1 ring-inset tabular-nums",
         TONE_CLASSES[tone],
         className ?? "",
       ].join(" ")}

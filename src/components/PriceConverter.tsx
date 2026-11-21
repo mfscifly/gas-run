@@ -7,8 +7,7 @@ import {
 } from "@/lib/calc";
 import { useFxRate } from "@/lib/use-fx";
 
-const inputCls =
-  "w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 min-h-12 text-base tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/40";
+const inputCls = "field text-base";
 
 type Side = "usd" | "cad";
 
@@ -84,7 +83,7 @@ export function PriceConverter() {
           />
         </label>
       </div>
-      <p className="text-xs opacity-60 tabular-nums">{fxLine}</p>
+      <p className="label-mono tabular-nums">{fxLine}</p>
     </div>
   );
 }

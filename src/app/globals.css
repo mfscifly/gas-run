@@ -1,28 +1,110 @@
 @import "tailwindcss";
 
+/*
+ * Theme: restrained and editorial. Near-black on off-white (inverted in dark
+ * mode), hairline rules instead of shadows, square corners, small mono labels.
+ * One accent, "signal blue", is used sparingly: the logo's hose, links on
+ * hover, focus. Green/amber/rose stay reserved for wait-time and savings tones
+ * so the accent never reads as a status.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f5;
+  --foreground: #0b0b0c;
+  --surface: #ffffff;
+  --surface-muted: #efefec;
+  --line: rgb(11 11 12 / 0.12);
+  --line-strong: rgb(11 11 12 / 0.28);
+  --accent: #2253e6;
+  --accent-soft: rgb(34 83 230 / 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090a;
+    --foreground: #ededee;
+    --surface: #111113;
+    --surface-muted: #18181b;
+    --line: rgb(237 237 238 / 0.12);
+    --line-strong: rgb(237 237 238 / 0.3);
+    --accent: #6f93ff;
+    --accent-soft: rgb(111 147 255 / 0.2);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Shared building blocks, so pages and components stay visually in step. */
+@utility panel {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+@utility field {
+  width: 100%;
+  border-radius: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  padding-inline: 0.75rem;
+  min-height: 3rem;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 120ms, box-shadow 120ms;
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+/* Small uppercase mono label used for section headings and kickers. */
+@utility label-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+@utility link {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+  transition: color 120ms, text-decoration-color 120ms;
+  &:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+  }
 }
 
 /* Prevent iOS auto-zoom on focus by ensuring inputs are >=16px */

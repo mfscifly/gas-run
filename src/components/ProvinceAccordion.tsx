@@ -26,7 +26,7 @@ function shortestUsBound(crossings: Crossing[], data: WaitsData) {
 export function ProvinceAccordion({ data }: Props) {
   const grouped = crossingsByProvince();
   return (
-    <div className="flex flex-col gap-2">
+    <div className="panel flex flex-col divide-y divide-line">
       {PROVINCE_ORDER.map((p) => (
         <ProvinceRow
           key={p}
@@ -51,10 +51,10 @@ function ProvinceRow({
   const min = shortestUsBound(crossings, data);
 
   return (
-    <details className="group rounded-xl border border-black/10 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.03] open:bg-transparent overflow-hidden">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 min-h-14 select-none hover:bg-black/[0.04] dark:hover:bg-white/[0.05] [&::-webkit-details-marker]:hidden">
+    <details className="group">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 min-h-16 select-none transition-colors hover:bg-surface-muted [&::-webkit-details-marker]:hidden">
         <div className="flex flex-col gap-0.5 min-w-0">
-          <span className="text-base font-semibold leading-tight">
+          <span className="text-base font-medium tracking-tight leading-tight">
             {PROVINCE_LABELS[province]}
           </span>
           <span className="text-xs opacity-60 tabular-nums">
@@ -70,22 +70,22 @@ function ProvinceRow({
       </summary>
       <div
         aria-hidden
-        className="flex items-center justify-end gap-1.5 border-t border-black/10 px-4 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wide opacity-60 dark:border-white/15"
+        className="label-mono flex items-center justify-end gap-1.5 border-t border-line bg-surface-muted px-4 py-1.5"
       >
         <span className="w-16 text-center">To US</span>
         <span className="w-16 text-center">To CA</span>
       </div>
-      <ul className="divide-y divide-black/5 dark:divide-white/10">
+      <ul className="divide-y divide-line">
         {crossings.map((c) => {
           const waits = getCrossingWaits(c, data);
           return (
             <li key={c.slug}>
               <Link
                 href={`/crossings/${c.slug}`}
-                className="flex items-center justify-between gap-3 px-4 py-3.5 min-h-14 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] active:bg-black/[0.06]"
+                className="group/row flex items-center justify-between gap-3 px-4 py-3.5 min-h-14 transition-colors hover:bg-surface-muted active:bg-surface-muted"
               >
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  <span className="truncate text-sm font-medium leading-tight">
+                  <span className="truncate text-sm font-medium leading-tight group-hover/row:text-accent">
                     {c.name}
                   </span>
                   <span className="truncate text-xs opacity-60">

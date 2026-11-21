@@ -7,8 +7,7 @@ import { useFxRate } from "@/lib/use-fx";
 const TANK_STORAGE_KEY = "gas-tools.tankSizeL";
 const DEFAULT_TANK_L = 60;
 
-const inputCls =
-  "w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 min-h-12 text-base tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/40";
+const inputCls = "field text-base";
 
 export type SavingsCardProps = {
   prefillUsdPerGal?: number;
@@ -173,14 +172,14 @@ function Hero({
 }) {
   const toneCls =
     tone === "good"
-      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-      : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300";
+      ? "border-emerald-600/30 border-l-emerald-600 bg-emerald-500/[0.07] text-emerald-700 dark:text-emerald-300 dark:border-l-emerald-400"
+      : "border-rose-600/30 border-l-rose-600 bg-rose-500/[0.07] text-rose-700 dark:text-rose-300 dark:border-l-rose-400";
   return (
-    <div className={`rounded-xl border p-5 sm:p-6 flex flex-col gap-1 ${toneCls}`}>
-      <span className="text-xs uppercase tracking-wide opacity-80">
+    <div className={`border border-l-4 p-5 sm:p-6 flex flex-col gap-2 ${toneCls}`}>
+      <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] opacity-90">
         {kicker}
       </span>
-      <span className="text-4xl sm:text-5xl font-semibold tabular-nums leading-none">
+      <span className="text-5xl sm:text-6xl font-normal tracking-[-0.03em] tabular-nums leading-none">
         {big}
       </span>
       <span className="text-sm opacity-80">{subtitle}</span>
@@ -210,7 +209,7 @@ function Breakdown({
     : "text-rose-700 dark:text-rose-300";
 
   return (
-    <div className="rounded-md border border-black/10 dark:border-white/15 px-4 py-3 text-sm tabular-nums flex flex-col gap-1.5">
+    <div className="panel px-4 py-3 text-sm tabular-nums flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between">
         <span className="opacity-70">Canada</span>
         <span>{cadPerL.toFixed(3)} /L</span>
@@ -224,7 +223,7 @@ function Breakdown({
           </span>
         </span>
       </div>
-      <div className="border-t border-black/10 dark:border-white/15 my-0.5" />
+      <div className="border-t border-line my-0.5" />
       <div className={`flex items-baseline justify-between font-medium ${gapTone}`}>
         <span>{gapLabel}</span>
         <span>
@@ -244,7 +243,7 @@ function PlaceholderHero({
   subtle?: string;
 }) {
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/15 bg-black/[0.02] dark:bg-white/[0.03] p-5 sm:p-6 flex flex-col gap-1">
+    <div className="panel border-l-4 border-l-line-strong p-5 sm:p-6 flex flex-col gap-1">
       <span className="text-base opacity-80">{text}</span>
       {subtle && <span className="text-xs opacity-60">{subtle}</span>}
     </div>
