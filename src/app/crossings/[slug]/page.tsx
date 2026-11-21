@@ -84,7 +84,7 @@ export default async function CrossingPage({
   return (
     <>
     <header className="hero-band text-white">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-6 sm:pt-10">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 pt-4 sm:gap-6 sm:pt-10">
       <Link
         href="/"
         className="label-mono self-start -ml-1 px-1 py-1 opacity-80 hover:opacity-100"
@@ -92,8 +92,8 @@ export default async function CrossingPage({
         ← All crossings
       </Link>
 
-      <div className="flex flex-col gap-3">
-        <h1 className="text-4xl sm:text-5xl font-normal tracking-[-0.035em] leading-[1.05]">
+      <div className="flex flex-col gap-1.5 sm:gap-3">
+        <h1 className="text-3xl sm:text-5xl font-normal tracking-[-0.035em] leading-[1.05]">
           {crossing.name}
         </h1>
         <p className="text-sm opacity-85">
@@ -105,12 +105,12 @@ export default async function CrossingPage({
         )}
       </div>
       </div>
-      <div className="mt-4 h-28 sm:aspect-[1200/260] sm:h-auto">
+      <div className="mt-1 h-14 sm:mt-4 sm:aspect-[1200/260] sm:h-auto">
         <BorderScene />
       </div>
     </header>
 
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-8 sm:py-12">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-5 sm:py-12">
       <section className="grid gap-px border border-line bg-line sm:grid-cols-2">
         <UsBoundCard
           wait={usBound}
