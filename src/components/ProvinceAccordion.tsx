@@ -13,27 +13,20 @@ type Props = {
   data: WaitsData;
 };
 
-// The province row summarizes US-bound waits as a range plus the quickest
-// crossing. Showing only the shortest wait ("no wait to US") read as "no
-// waits anywhere in BC" while another BC crossing sat at 30 minutes.
-type UsBoundSummary = {
-  min: number;
-  max: number;
-  quickest: Crossing[]; // every crossing tied at `min`
-};
-
-function summarizeUsBound(crossings: Crossing[], data: WaitsData): UsBoundSummary | null {
-  const posted: { c: Crossing; d: number }[] = [];
+// The province row summarizes US-bound waits as a range. Showing only the
+// shortest wait ("no wait to US") read as "no waits anywhere in BC" while
+// another BC crossing sat at 30 minutes.
+function summarizeUsBound(
+  crossings: Crossing[],
+  data: WaitsData,
+): { min: number; max: number } | null {
+  const posted: number[] = [];
   for (const c of crossings) {
     const w = getCrossingWaits(c, data).usBound;
-    if (w?.status === "open" && typeof w.delayMin === "number") {
-      posted.push({ c, d: w.delayMin });
-    }
+    if (w?.status === "open" && typeof w.delayMin === "number") posted.push(w.delayMin);
   }
   if (posted.length === 0) return null;
-  const min = Math.min(...posted.map((p) => p.d));
-  const max = Math.max(...posted.map((p) => p.d));
-  return { min, max, quickest: posted.filter((p) => p.d === min).map((p) => p.c) };
+  return { min: Math.min(...posted), max: Math.max(...posted) };
 }
 
 function waitText(min: number): string {
@@ -88,13 +81,6 @@ function ProvinceRow({
               </>
             )}
           </span>
-          {us && spread && (
-            <span className="truncate text-xs opacity-60 tabular-nums">
-              Quickest: {us.quickest[0].name}
-              {us.quickest.length > 1 && ` +${us.quickest.length - 1}`},{" "}
-              {waitText(us.min)}
-            </span>
-          )}
         </div>
         <Chevron />
       </summary>
