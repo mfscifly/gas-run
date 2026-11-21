@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { calculateSavings, type SavingsResult } from "@/lib/calc";
 import { useFxRate } from "@/lib/use-fx";
-import { formatWaitDuration, type TripWait } from "@/lib/trip-wait";
+import {
+  MARGINAL_CAD_PER_HOUR,
+  formatWaitDuration,
+  savingsPerHour,
+  type TripWait,
+} from "@/lib/trip-wait";
 
 const TANK_STORAGE_KEY = "gas-tools.tankSizeL";
 const DEFAULT_TANK_L = 60;
@@ -13,7 +18,9 @@ const inputCls = "field text-base";
 export type SavingsCardProps = {
   prefillUsdPerGal?: number;
   prefillCadPerL?: number;
-  prefillMeta?: { label: string; updatedAt: string };
+  // Where the pre-filled prices come from, already worded for display, e.g.
+  // "Vancouver October average and WA average for the week of Nov 16".
+  prefillSource?: string;
   // Live border waits for this crossing, so the verdict weighs time as well
   // as money. Omitted where there's no crossing context.
   tripWait?: TripWait;
@@ -30,8 +37,15 @@ export function waitVerdictLine(savingsCad: number, wait: TripWait): string {
   const time = `${wait.partial ? "at least" : "about"} ${formatWaitDuration(wait.totalMin)} of waiting`;
   const note = wait.partial ? " (one direction isn't posted)" : "";
   if (!saved) return `${money}, plus ${time}${note}.`;
-  const perHour = Math.round(savingsCad / (wait.totalMin / 60));
-  return `${money}, ${time}${note}. That's about $${perHour} an hour.`;
+  const raw = savingsPerHour(savingsCad, wait)!;
+  const marginal = raw < MARGINAL_CAD_PER_HOUR;
+  // Round, but never up to the line itself: $19.60 must not read "$20 an
+  // hour, below our $20 an hour line".
+  const perHour = marginal
+    ? Math.min(Math.round(raw), MARGINAL_CAD_PER_HOUR - 1)
+    : Math.round(raw);
+  const line = marginal ? `, below our $${MARGINAL_CAD_PER_HOUR} an hour line` : "";
+  return `${money}, ${time}${note}. That's about $${perHour} an hour${line}.`;
 }
 
 function parse(value: string): number | null {
@@ -51,7 +65,7 @@ function fmt3(n: number | undefined): string {
 export function SavingsCard({
   prefillUsdPerGal,
   prefillCadPerL,
-  prefillMeta,
+  prefillSource,
   tripWait,
 }: SavingsCardProps) {
   const fx = useFxRate();
@@ -97,12 +111,16 @@ export function SavingsCard({
       <PlaceholderHero text="Enter both gas prices to see your savings." />
     );
   } else if (result.worthIt) {
+    // Saving money but not much per hour in line: say so in the label too,
+    // not only in the line underneath.
+    const perHour = tripWait ? savingsPerHour(result.savingsCad, tripWait) : null;
+    const marginal = perHour !== null && perHour < MARGINAL_CAD_PER_HOUR;
     hero = (
       <Hero
-        tone="good"
+        tone={marginal ? "warn" : "good"}
         big={`$${result.savingsCad.toFixed(2)}`}
         subtitle={`saved per ${tankSizeNum} L tank`}
-        kicker="Worth the trip"
+        kicker={marginal ? "Marginal" : "Worth the trip"}
         detail={tripWait && waitVerdictLine(result.savingsCad, tripWait)}
       />
     );
@@ -132,10 +150,9 @@ export function SavingsCard({
         />
       )}
 
-      {prefillMeta && (
+      {prefillSource && (
         <p className="text-xs opacity-60">
-          Pre-filled with {prefillMeta.label} (updated {prefillMeta.updatedAt}).
-          Edit to use your own.
+          Pre-filled with the {prefillSource}. Edit to use your own.
         </p>
       )}
 
@@ -188,16 +205,17 @@ function Hero({
   kicker,
   detail,
 }: {
-  tone: "good" | "bad";
+  tone: "good" | "warn" | "bad";
   big: string;
   subtitle: string;
   kicker: string;
   detail?: string;
 }) {
-  const toneCls =
-    tone === "good"
-      ? "border-emerald-600/30 border-l-emerald-600 bg-emerald-500/[0.07] text-emerald-700 dark:text-emerald-300 dark:border-l-emerald-400"
-      : "border-rose-600/30 border-l-rose-600 bg-rose-500/[0.07] text-rose-700 dark:text-rose-300 dark:border-l-rose-400";
+  const toneCls = {
+    good: "border-emerald-600/30 border-l-emerald-600 bg-emerald-500/[0.07] text-emerald-700 dark:text-emerald-300 dark:border-l-emerald-400",
+    warn: "border-amber-600/30 border-l-amber-600 bg-amber-500/[0.07] text-amber-800 dark:text-amber-300 dark:border-l-amber-400",
+    bad: "border-rose-600/30 border-l-rose-600 bg-rose-500/[0.07] text-rose-700 dark:text-rose-300 dark:border-l-rose-400",
+  }[tone];
   return (
     <div className={`border border-l-4 p-5 sm:p-6 flex flex-col gap-2 ${toneCls}`}>
       <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] opacity-90">

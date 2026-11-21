@@ -45,3 +45,17 @@ export function formatWaitDuration(totalMin: number): string {
   const mins = r ? `${r} minutes` : "";
   return [hours, mins].filter(Boolean).join(" ");
 }
+
+// Below this many dollars saved per hour of border waiting, a trip that still
+// saves money is labelled "Marginal" instead of "Worth the trip". It's a
+// judgement call about what an hour in line is worth, so it lives here as one
+// plainly named number: change it to move the line for everyone.
+export const MARGINAL_CAD_PER_HOUR = 20;
+
+// Savings per hour spent waiting, or null when there's no wait to divide by
+// (no lineup, nothing posted, or closed). With a partial wait this is an upper
+// bound, since only one direction's minutes are counted.
+export function savingsPerHour(savingsCad: number, wait: TripWait): number | null {
+  if (wait.closed || wait.totalMin === null || wait.totalMin === 0) return null;
+  return savingsCad / (wait.totalMin / 60);
+}

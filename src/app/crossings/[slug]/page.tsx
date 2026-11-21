@@ -19,7 +19,11 @@ import {
   type WaitTime,
 } from "@/lib/wait-times";
 import { summarizeTripWait } from "@/lib/trip-wait";
-import { formatUpdatedClock } from "@/lib/time";
+import {
+  formatPriceMonth,
+  formatPriceWeek,
+  formatUpdatedClock,
+} from "@/lib/time";
 
 export const revalidate = 300;
 
@@ -77,9 +81,11 @@ export default async function CrossingPage({
 
   const caPrice = CA_MARKET_PRICES[crossing.caMarket];
   const usStatePrice = US_STATE_PRICES[crossing.usState];
-  const prefillUpdated = [caPrice.updatedAt, usStatePrice.updatedAt]
-    .sort()
-    .at(0)!;
+  // StatCan is a monthly average and EIA a weekly one, so name each by its
+  // period instead of showing one raw ISO date for both.
+  const prefillSource =
+    `${CA_MARKET_LABELS[crossing.caMarket]} ${formatPriceMonth(caPrice.updatedAt)} average` +
+    ` and ${crossing.usState} average for the week of ${formatPriceWeek(usStatePrice.updatedAt)}`;
 
   return (
     <>
@@ -190,10 +196,7 @@ export default async function CrossingPage({
         <SavingsCard
           prefillUsdPerGal={usStatePrice.usdPerGal}
           prefillCadPerL={caPrice.cadPerL}
-          prefillMeta={{
-            label: `${CA_MARKET_LABELS[crossing.caMarket]} + ${crossing.usState} averages`,
-            updatedAt: prefillUpdated,
-          }}
+          prefillSource={prefillSource}
           tripWait={summarizeTripWait(usBound, caBound)}
         />
       </section>
